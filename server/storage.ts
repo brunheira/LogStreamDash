@@ -1,6 +1,7 @@
 import { redisConnections, logs, type RedisConnection, type InsertRedisConnection, type UpdateRedisConnection, type Log, type InsertLog, type LogFilter } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, ilike, desc, sql } from "drizzle-orm";
+import { redisService } from "./redis";
 
 export interface IStorage {
   // Redis Connection methods
@@ -64,49 +65,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLogs(filters: LogFilter): Promise<{ logs: Log[]; total: number }> {
-    const conditions = [];
-
-    if (filters.level) {
-      conditions.push(eq(logs.level, filters.level));
+    // Buscar logs da primeira conexão Redis disponível
+    const connections = await this.getRedisConnections();
+    
+    if (connections.length === 0) {
+      return { logs: [], total: 0 };
     }
     
-    if (filters.service) {
-      conditions.push(eq(logs.service, filters.service));
+    try {
+      // Usar a primeira conexão disponível para buscar logs
+      const connection = connections[0];
+      const result = await redisService.getLogsFromRedis(connection, {
+        ...filters,
+        page: filters.page || 1,
+        pageSize: filters.limit || 10
+      });
+      return result;
+    } catch (error) {
+      console.error('Erro ao buscar logs do Redis:', error);
+      return { logs: [], total: 0 };
     }
-    
-    if (filters.search) {
-      conditions.push(
-        sql`(${logs.message} ILIKE ${`%${filters.search}%`} OR ${logs.service} ILIKE ${`%${filters.search}%`})`
-      );
-    }
-
-    if (filters.startDate) {
-      conditions.push(gte(logs.timestamp, new Date(filters.startDate)));
-    }
-
-    if (filters.endDate) {
-      conditions.push(lte(logs.timestamp, new Date(filters.endDate)));
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    // Get total count
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(logs)
-      .where(whereClause);
-
-    // Get paginated logs
-    const offset = (filters.page - 1) * filters.limit;
-    const logsResult = await db
-      .select()
-      .from(logs)
-      .where(whereClause)
-      .orderBy(desc(logs.timestamp))
-      .limit(filters.limit)
-      .offset(offset);
-
-    return { logs: logsResult, total: Number(count) };
   }
 
   async getLog(id: number): Promise<Log | undefined> {
