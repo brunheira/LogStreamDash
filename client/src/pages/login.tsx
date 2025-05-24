@@ -3,8 +3,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn, User, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginData } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
@@ -16,7 +29,10 @@ interface LoginPageProps {
   onShowRegister: () => void;
 }
 
-export default function LoginPage({ onLoginSuccess, onShowRegister }: LoginPageProps) {
+export default function LoginPage({
+  onLoginSuccess,
+  onShowRegister,
+}: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
@@ -68,7 +84,7 @@ export default function LoginPage({ onLoginSuccess, onShowRegister }: LoginPageP
               <LogIn className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Redis Log Manager</CardTitle>
+          <CardTitle className="text-2xl font-bold">Vlogger</CardTitle>
           <CardDescription>
             Faça login para acessar o sistema de gerenciamento de logs
           </CardDescription>
@@ -97,7 +113,7 @@ export default function LoginPage({ onLoginSuccess, onShowRegister }: LoginPageP
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
