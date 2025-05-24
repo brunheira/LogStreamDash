@@ -1,9 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRedisConnectionSchema, updateRedisConnectionSchema, logFilterSchema, insertLogSchema } from "@shared/schema";
+import { insertRedisConnectionSchema, updateRedisConnectionSchema, logFilterSchema, insertLogSchema, loginSchema, registerSchema } from "@shared/schema";
 import { z } from "zod";
 import { redisService } from "./redis";
+import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Redis Connection routes

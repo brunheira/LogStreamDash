@@ -1,7 +1,15 @@
-import { pgTable, text, serial, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, json, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export const redisConnections = pgTable("redis_connections", {
   id: serial("id").primaryKey(),
@@ -64,6 +72,27 @@ export const logFilterSchema = z.object({
   limit: z.number().min(1).max(100).default(20),
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Email deve ter um formato válido"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
+
+export const registerSchema = insertUserSchema.extend({
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Senhas não coincidem",
+  path: ["confirmPassword"],
+});
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 export type RedisConnection = typeof redisConnections.$inferSelect;
 export type InsertRedisConnection = z.infer<typeof insertRedisConnectionSchema>;
 export type UpdateRedisConnection = z.infer<typeof updateRedisConnectionSchema>;
