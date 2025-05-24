@@ -13,8 +13,7 @@ export function Header({ onNewConnection }: HeaderProps) {
 
   const navItems = [
     { path: "/", label: "Logs", icon: ScrollText },
-    { path: "/connections", label: "Conexões Redis", icon: Server },
-    { path: "/settings", label: "Configurações", icon: Settings },
+    { path: "/connections", label: "Conexões Redis", icon: Server }
   ];
 
   return (
@@ -26,7 +25,7 @@ export function Header({ onNewConnection }: HeaderProps) {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-navy rounded-lg flex items-center justify-center">
                 <Database className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-navy dark:text-blue-400">RedisWatch</h1>
+              <h1 className="text-xl font-bold text-navy dark:text-blue-400">VLogger</h1>
             </div>
             <nav className="hidden md:flex space-x-8 ml-8">
               {navItems.map((item) => {
