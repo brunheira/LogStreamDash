@@ -1,4 +1,5 @@
 import { pgTable, text, serial, timestamp, json } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -23,6 +24,18 @@ export const logs = pgTable("logs", {
   timestamp: timestamp("timestamp").defaultNow(),
   metadata: json("metadata"), // additional fields like requestId, ip, etc.
 });
+
+// Relations
+export const redisConnectionsRelations = relations(redisConnections, ({ many }) => ({
+  logs: many(logs),
+}));
+
+export const logsRelations = relations(logs, ({ one }) => ({
+  connection: one(redisConnections, {
+    fields: [logs.connectionId],
+    references: [redisConnections.id],
+  }),
+}));
 
 export const insertRedisConnectionSchema = createInsertSchema(redisConnections).omit({
   id: true,
