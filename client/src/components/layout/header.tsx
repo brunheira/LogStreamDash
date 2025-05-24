@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Database, ScrollText, Server, Settings, Plus, Bell, User, LogOut } from "lucide-react";
+import { Database, ScrollText, Server, Settings, Plus, Bell, User, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/contexts/auth-context";
@@ -15,9 +15,11 @@ import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   onNewConnection: () => void;
+  onToggleSidebar: () => void;
+  sidebarOpen: boolean;
 }
 
-export function Header({ onNewConnection }: HeaderProps) {
+export function Header({ onNewConnection, onToggleSidebar, sidebarOpen }: HeaderProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
 
@@ -43,7 +45,17 @@ export function Header({ onNewConnection }: HeaderProps) {
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-slate-200 dark:border-gray-700">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            {/* Hamburger button for mobile and sidebar toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleSidebar}
+              className="lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {location === "/" ? "Dashboard de Logs" : location === "/connections" ? "Conexões Redis" : "VLogger"}
             </h2>
