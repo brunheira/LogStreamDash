@@ -110,49 +110,22 @@ export class DatabaseStorage implements IStorage {
     warnings24h: number;
     successRate: number;
   }> {
-    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    // Get total logs count
-    const [{ totalLogs }] = await db
-      .select({ totalLogs: sql<number>`count(*)` })
-      .from(logs);
-
-    // Get recent logs stats
-    const recentStats = await db
-      .select({
-        level: logs.level,
-        count: sql<number>`count(*)`,
-      })
-      .from(logs)
-      .where(gte(logs.timestamp, last24h))
-      .groupBy(logs.level);
-
-    let errors24h = 0;
-    let warnings24h = 0;
-    let totalRecent = 0;
-    let successfulRecent = 0;
-
-    recentStats.forEach(stat => {
-      const count = Number(stat.count);
-      totalRecent += count;
-      
-      if (stat.level === "error") {
-        errors24h = count;
-      } else if (stat.level === "warning") {
-        warnings24h = count;
-      } else if (stat.level === "info" || stat.level === "debug") {
-        successfulRecent += count;
-      }
-    });
-
-    const successRate = totalRecent > 0 ? (successfulRecent / totalRecent) * 100 : 100;
-
-    return {
-      totalLogs: Number(totalLogs),
-      errors24h,
-      warnings24h,
-      successRate: Math.round(successRate * 10) / 10,
-    };
+    // Buscar estatísticas da primeira conexão Redis disponível
+    const connections = await this.getRedisConnections();
+    
+    if (connections.length === 0) {
+      return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
+    }
+    
+    try {
+      // Usar a primeira conexão disponível para buscar estatísticas
+      const connection = connections[0];
+      const stats = await redisService.getLogStatsFromRedis(connection);
+      return stats;
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas do Redis:', error);
+      return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
+    }
   }
 }
 
