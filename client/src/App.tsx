@@ -16,6 +16,7 @@ import NotFound from "@/pages/not-found";
 
 function AuthenticatedApp() {
   const [showNewConnectionModal, setShowNewConnectionModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleNewConnection = () => {
     setShowNewConnectionModal(true);
@@ -25,11 +26,23 @@ function AuthenticatedApp() {
     queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onNewConnection={handleNewConnection} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'lg:ml-0' : ''}`}>
+        <Header 
+          onNewConnection={handleNewConnection} 
+          onToggleSidebar={toggleSidebar}
+          sidebarOpen={sidebarOpen}
+        />
         <main className="flex-1 overflow-auto">
           <Switch>
             <Route path="/" component={Dashboard} />
