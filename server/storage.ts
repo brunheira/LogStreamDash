@@ -1,4 +1,6 @@
 import { redisConnections, logs, type RedisConnection, type InsertRedisConnection, type UpdateRedisConnection, type Log, type InsertLog, type LogFilter } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, gte, lte, ilike, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Redis Connection methods
@@ -18,6 +20,161 @@ export interface IStorage {
     warnings24h: number;
     successRate: number;
   }>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getRedisConnections(): Promise<RedisConnection[]> {
+    const connections = await db.select().from(redisConnections).orderBy(desc(redisConnections.createdAt));
+    return connections;
+  }
+
+  async getRedisConnection(id: number): Promise<RedisConnection | undefined> {
+    const [connection] = await db.select().from(redisConnections).where(eq(redisConnections.id, id));
+    return connection || undefined;
+  }
+
+  async createRedisConnection(connection: InsertRedisConnection): Promise<RedisConnection> {
+    const [newConnection] = await db
+      .insert(redisConnections)
+      .values({
+        ...connection,
+        port: connection.port || "6379",
+        database: connection.database || "0",
+        status: "disconnected",
+        lastConnected: null,
+        createdAt: new Date(),
+      })
+      .returning();
+    return newConnection;
+  }
+
+  async updateRedisConnection(id: number, connection: UpdateRedisConnection): Promise<RedisConnection | undefined> {
+    const [updatedConnection] = await db
+      .update(redisConnections)
+      .set(connection)
+      .where(eq(redisConnections.id, id))
+      .returning();
+    return updatedConnection || undefined;
+  }
+
+  async deleteRedisConnection(id: number): Promise<boolean> {
+    const result = await db.delete(redisConnections).where(eq(redisConnections.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getLogs(filters: LogFilter): Promise<{ logs: Log[]; total: number }> {
+    const conditions = [];
+
+    if (filters.level) {
+      conditions.push(eq(logs.level, filters.level));
+    }
+    
+    if (filters.service) {
+      conditions.push(eq(logs.service, filters.service));
+    }
+    
+    if (filters.search) {
+      conditions.push(
+        sql`(${logs.message} ILIKE ${`%${filters.search}%`} OR ${logs.service} ILIKE ${`%${filters.search}%`})`
+      );
+    }
+
+    if (filters.startDate) {
+      conditions.push(gte(logs.timestamp, new Date(filters.startDate)));
+    }
+
+    if (filters.endDate) {
+      conditions.push(lte(logs.timestamp, new Date(filters.endDate)));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Get total count
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(logs)
+      .where(whereClause);
+
+    // Get paginated logs
+    const offset = (filters.page - 1) * filters.limit;
+    const logsResult = await db
+      .select()
+      .from(logs)
+      .where(whereClause)
+      .orderBy(desc(logs.timestamp))
+      .limit(filters.limit)
+      .offset(offset);
+
+    return { logs: logsResult, total: Number(count) };
+  }
+
+  async getLog(id: number): Promise<Log | undefined> {
+    const [log] = await db.select().from(logs).where(eq(logs.id, id));
+    return log || undefined;
+  }
+
+  async createLog(log: InsertLog): Promise<Log> {
+    const [newLog] = await db
+      .insert(logs)
+      .values({
+        ...log,
+        metadata: log.metadata || null,
+        timestamp: new Date(),
+      })
+      .returning();
+    return newLog;
+  }
+
+  async getLogStats(): Promise<{
+    totalLogs: number;
+    errors24h: number;
+    warnings24h: number;
+    successRate: number;
+  }> {
+    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // Get total logs count
+    const [{ totalLogs }] = await db
+      .select({ totalLogs: sql<number>`count(*)` })
+      .from(logs);
+
+    // Get recent logs stats
+    const recentStats = await db
+      .select({
+        level: logs.level,
+        count: sql<number>`count(*)`,
+      })
+      .from(logs)
+      .where(gte(logs.timestamp, last24h))
+      .groupBy(logs.level);
+
+    let errors24h = 0;
+    let warnings24h = 0;
+    let totalRecent = 0;
+    let successfulRecent = 0;
+
+    recentStats.forEach(stat => {
+      const count = Number(stat.count);
+      totalRecent += count;
+      
+      if (stat.level === "error") {
+        errors24h = count;
+      } else if (stat.level === "warning") {
+        warnings24h = count;
+      } else if (stat.level === "info" || stat.level === "debug") {
+        successfulRecent += count;
+      }
+    });
+
+    const successRate = totalRecent > 0 ? (successfulRecent / totalRecent) * 100 : 100;
+
+    return {
+      totalLogs: Number(totalLogs),
+      errors24h,
+      warnings24h,
+      successRate: Math.round(successRate * 10) / 10,
+    };
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -262,4 +419,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
