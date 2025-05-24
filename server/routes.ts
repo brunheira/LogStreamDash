@@ -7,6 +7,67 @@ import { redisService } from "./redis";
 import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email já está em uso" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      // Create user
+      const user = await storage.createUser({
+        name: validatedData.name,
+        email: validatedData.email,
+        password: hashedPassword,
+      });
+      
+      // Don't return password
+      const { password, ...userWithoutPassword } = user;
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Registration error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(validatedData.email);
+      if (!user) {
+        return res.status(401).json({ message: "Credenciais inválidas" });
+      }
+      
+      // Check password
+      const isValidPassword = await bcrypt.compare(validatedData.password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Credenciais inválidas" });
+      }
+      
+      // Don't return password
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Login error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   // Redis Connection routes
   app.get("/api/connections", async (req, res) => {
     try {
