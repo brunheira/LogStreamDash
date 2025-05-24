@@ -35,14 +35,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/connections", async (req, res) => {
     try {
+      console.log("Request body:", req.body);
       const validatedData = insertRedisConnectionSchema.parse(req.body);
+      console.log("Validated data:", validatedData);
       const connection = await storage.createRedisConnection(validatedData);
+      console.log("Created connection:", connection);
       res.status(201).json(connection);
     } catch (error) {
+      console.error("Error creating connection:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create connection" });
+      res.status(500).json({ message: "Failed to create connection", error: error.message });
     }
   });
 

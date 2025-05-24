@@ -8,11 +8,11 @@ export const redisConnections = pgTable("redis_connections", {
   name: text("name").notNull(),
   host: text("host").notNull(),
   port: text("port").notNull().default("6379"),
-  password: text("password"),
-  database: text("database").default("0"),
+  password: text("password").default(null),
+  database: text("database").notNull().default("0"),
   status: text("status").notNull().default("disconnected"), // connected, disconnected, connecting, error
-  lastConnected: timestamp("last_connected"),
-  createdAt: timestamp("created_at").defaultNow(),
+  lastConnected: timestamp("last_connected").default(null),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const logs = pgTable("logs", {
@@ -49,7 +49,10 @@ export const insertLogSchema = createInsertSchema(logs).omit({
   timestamp: true,
 });
 
-export const updateRedisConnectionSchema = insertRedisConnectionSchema.partial();
+export const updateRedisConnectionSchema = insertRedisConnectionSchema.partial().extend({
+  status: z.string().optional(),
+  lastConnected: z.date().optional(),
+});
 
 export const logFilterSchema = z.object({
   level: z.string().optional(),
