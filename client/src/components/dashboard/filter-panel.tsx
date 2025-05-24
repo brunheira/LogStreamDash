@@ -82,7 +82,7 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
                 <SelectValue placeholder="Todos os níveis" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os níveis</SelectItem>
+                <SelectItem value="all">Todos os níveis</SelectItem>
                 <SelectItem value="error">Error</SelectItem>
                 <SelectItem value="warning">Warning</SelectItem>
                 <SelectItem value="info">Info</SelectItem>
@@ -102,7 +102,7 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
                 <SelectValue placeholder="Todos os serviços" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os serviços</SelectItem>
+                <SelectItem value="all">Todos os serviços</SelectItem>
                 {services.map((service) => (
                   <SelectItem key={service} value={service}>
                     {service}

@@ -33,9 +33,9 @@ export function Header({ onNewConnection }: HeaderProps) {
                 const isActive = location === item.path;
                 return (
                   <Link key={item.path} href={item.path}>
-                    <a
+                    <span
                       className={cn(
-                        "flex items-center space-x-2 transition-colors pb-1",
+                        "flex items-center space-x-2 transition-colors pb-1 cursor-pointer",
                         isActive
                           ? "text-primary font-medium border-b-2 border-primary"
                           : "text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400"
@@ -43,7 +43,7 @@ export function Header({ onNewConnection }: HeaderProps) {
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.label}</span>
-                    </a>
+                    </span>
                   </Link>
                 );
               })}
