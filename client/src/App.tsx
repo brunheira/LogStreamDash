@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
 import { NewConnectionForm } from "@/components/connections/new-connection-form";
 import Dashboard from "@/pages/dashboard";
@@ -34,18 +35,20 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-          <Header onNewConnection={handleNewConnection} />
-          <Router />
-        </div>
-        <Toaster />
-        <NewConnectionForm
-          open={showNewConnectionModal}
-          onOpenChange={setShowNewConnectionModal}
-          onSuccess={handleNewConnectionSuccess}
-        />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="system" storageKey="rediswatch-theme">
+        <TooltipProvider>
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+            <Header onNewConnection={handleNewConnection} />
+            <Router />
+          </div>
+          <Toaster />
+          <NewConnectionForm
+            open={showNewConnectionModal}
+            onOpenChange={setShowNewConnectionModal}
+            onSuccess={handleNewConnectionSuccess}
+          />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -118,7 +118,12 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <StatsCards
-          stats={stats ? stats : { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 0 }}
+          stats={{
+            totalLogs: stats?.totalLogs ?? 0,
+            errors24h: stats?.errors24h ?? 0,
+            warnings24h: stats?.warnings24h ?? 0,
+            successRate: stats?.successRate ?? 0
+          }}
           isLoading={statsLoading}
         />
       </div>

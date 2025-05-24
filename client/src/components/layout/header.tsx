@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Database, ScrollText, Server, Settings, Plus, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
@@ -54,6 +55,7 @@ export function Header({ onNewConnection }: HeaderProps) {
               <Plus className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Nova Conexão</span>
             </Button>
+            <ThemeToggle />
             <Button variant="ghost" size="icon">
               <Bell className="w-5 h-5" />
             </Button>
