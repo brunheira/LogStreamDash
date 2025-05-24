@@ -106,7 +106,7 @@ export default function AuthPage() {
               <LogIn className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Redis Log Manager</CardTitle>
+          <CardTitle className="text-2xl font-bold">VLogger</CardTitle>
           <CardDescription>
             Acesse ou crie sua conta para gerenciar logs Redis
           </CardDescription>
