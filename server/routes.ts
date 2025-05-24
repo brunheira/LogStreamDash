@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRedisConnectionSchema, updateRedisConnectionSchema, logFilterSchema, insertLogSchema } from "@shared/schema";
 import { z } from "zod";
-import { redisService } from "./redis";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Redis Connection routes
@@ -89,38 +88,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete connection" });
-    }
-  });
-
-  app.post("/api/connections/:id/test", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid connection ID" });
-      }
-
-      const connection = await storage.getRedisConnection(id);
-      if (!connection) {
-        return res.status(404).json({ message: "Connection not found" });
-      }
-
-      const result = await redisService.testConnection(connection);
-      
-      if (result.success) {
-        await storage.updateRedisConnection(id, {
-          status: "connected",
-          lastConnected: new Date()
-        });
-        res.status(200).json({ success: true, message: result.message });
-      } else {
-        await storage.updateRedisConnection(id, {
-          status: "error"
-        });
-        res.status(400).json({ success: false, message: result.message });
-      }
-    } catch (error) {
-      console.error("Error testing connection:", error);
-      res.status(500).json({ success: false, message: "Failed to test connection" });
     }
   });
 
