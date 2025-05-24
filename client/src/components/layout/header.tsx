@@ -41,36 +41,12 @@ export function Header({ onNewConnection }: HeaderProps) {
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-slate-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-navy rounded-lg flex items-center justify-center">
-                <Database className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-navy dark:text-blue-400">VLogger</h1>
-            </div>
-            <nav className="hidden md:flex space-x-8 ml-8">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location === item.path;
-                return (
-                  <Link key={item.path} href={item.path}>
-                    <span
-                      className={cn(
-                        "flex items-center space-x-2 transition-colors pb-1 cursor-pointer",
-                        isActive
-                          ? "text-primary font-medium border-b-2 border-primary"
-                          : "text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400"
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </span>
-                  </Link>
-                );
-              })}
-            </nav>
+          <div className="flex items-center">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {location === "/" ? "Dashboard de Logs" : location === "/connections" ? "Conexões Redis" : "VLogger"}
+            </h2>
           </div>
           <div className="flex items-center space-x-4">
             <Button onClick={onNewConnection} className="bg-primary hover:bg-blue-700">
