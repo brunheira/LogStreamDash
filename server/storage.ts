@@ -34,16 +34,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createRedisConnection(connection: InsertRedisConnection): Promise<RedisConnection> {
+    const connectionData = {
+      name: connection.name,
+      host: connection.host,
+      port: connection.port || "6379",
+      password: connection.password || null,
+      database: connection.database || "0",
+    };
+    
     const [newConnection] = await db
       .insert(redisConnections)
-      .values({
-        ...connection,
-        port: connection.port || "6379",
-        database: connection.database || "0",
-        status: "disconnected",
-        lastConnected: null,
-        createdAt: new Date(),
-      })
+      .values(connectionData)
       .returning();
     return newConnection;
   }
