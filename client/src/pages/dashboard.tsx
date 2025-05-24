@@ -57,7 +57,13 @@ export default function Dashboard() {
   };
 
   const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
+    // Convert "all" values back to empty strings for API
+    const apiFilters = {
+      ...newFilters,
+      level: newFilters.level === "all" ? "" : newFilters.level,
+      service: newFilters.service === "all" ? "" : newFilters.service,
+    };
+    setFilters(apiFilters);
     setPage(1); // Reset to first page when filters change
   };
 
@@ -112,7 +118,7 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <StatsCards
-          stats={stats || { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 0 }}
+          stats={stats ? stats : { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 0 }}
           isLoading={statsLoading}
         />
       </div>
