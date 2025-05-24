@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,11 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
   const debouncedSearch = useDebounce(localSearch, 300);
 
   // Update parent when debounced search changes
-  useState(() => {
+  useEffect(() => {
     if (debouncedSearch !== filters.search) {
       onFiltersChange({ ...filters, search: debouncedSearch });
     }
-  });
+  }, [debouncedSearch, filters, onFiltersChange]);
 
   const services = [
     "auth-service",
