@@ -1,4 +1,4 @@
-# RedisWatch 🔍
+# VLogger 🔍
 
 Um aplicativo web moderno e elegante para monitoramento e gerenciamento de logs Redis com interface sofisticada em tons de azul.
 
