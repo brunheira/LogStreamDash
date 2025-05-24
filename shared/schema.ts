@@ -8,10 +8,10 @@ export const redisConnections = pgTable("redis_connections", {
   name: text("name").notNull(),
   host: text("host").notNull(),
   port: text("port").notNull().default("6379"),
-  password: text("password").default(null),
+  password: text("password"),
   database: text("database").notNull().default("0"),
   status: text("status").notNull().default("disconnected"), // connected, disconnected, connecting, error
-  lastConnected: timestamp("last_connected").default(null),
+  lastConnected: timestamp("last_connected"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
