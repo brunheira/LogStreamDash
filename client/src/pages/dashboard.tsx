@@ -125,6 +125,17 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["/api/logs/stats"] });
   };
 
+  const handleTimeRangeSelect = (startTime: string, endTime: string) => {
+    if (startTime && endTime) {
+      setSelectedTimeRange({ start: startTime, end: endTime });
+      setFilters(prev => ({ ...prev, startTime, endTime }));
+    } else {
+      setSelectedTimeRange(undefined);
+      setFilters(prev => ({ ...prev, startTime: '', endTime: '' }));
+    }
+    setPage(1);
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Dashboard Header */}
@@ -227,6 +238,13 @@ export default function Dashboard() {
         onRefreshIntervalChange={setRefreshInterval}
         isAutoRefresh={isAutoRefresh}
         onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+      />
+
+      {/* Interactive Log Timeline */}
+      <LogTimeline
+        logs={logsData?.logs || []}
+        onTimeRangeSelect={handleTimeRangeSelect}
+        selectedTimeRange={selectedTimeRange}
       />
 
       {/* Log Table */}
