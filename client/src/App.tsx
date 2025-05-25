@@ -51,6 +51,10 @@ function AuthenticatedApp() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/connections" component={Connections} />
+            <Route path="/connection-health" component={ConnectionHealthPage} />
+            <Route path="/pattern-analysis" component={PatternAnalysisPage} />
+            <Route path="/log-timeline" component={LogTimelinePage} />
+            <Route path="/statistics" component={StatisticsPage} />
             <Route component={NotFound} />
           </Switch>
         </main>
