@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/auth-context'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ interface RegisterData {
 export default function AuthPage() {
   const { login } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const [loginForm, setLoginForm] = useState<LoginData>({
     email: '',
@@ -56,7 +58,7 @@ export default function AuthPage() {
         title: 'Login successful',
         description: 'Welcome back!',
       })
-      window.location.href = '/'
+      navigate('/', { replace: true })
     },
     onError: () => {
       toast({
@@ -89,7 +91,7 @@ export default function AuthPage() {
         title: 'Registration successful',
         description: 'Welcome to VLogger!',
       })
-      window.location.href = '/'
+      navigate('/', { replace: true })
     },
     onError: () => {
       toast({
