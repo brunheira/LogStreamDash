@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Calendar, Search } from "lucide-react";
+import { Calendar, Search, Clock, RotateCcw, Play, Pause } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useDebounce } from "@/hooks/use-mock-data";
 
 interface FilterPanelProps {
@@ -14,12 +15,26 @@ interface FilterPanelProps {
     search: string;
     startDate?: string;
     endDate?: string;
+    startTime?: string;
+    endTime?: string;
   };
   onFiltersChange: (filters: any) => void;
   onClearFilters: () => void;
+  refreshInterval: number;
+  onRefreshIntervalChange: (interval: number) => void;
+  isAutoRefresh: boolean;
+  onToggleAutoRefresh: () => void;
 }
 
-export function FilterPanel({ filters, onFiltersChange, onClearFilters }: FilterPanelProps) {
+export function FilterPanel({ 
+  filters, 
+  onFiltersChange, 
+  onClearFilters,
+  refreshInterval,
+  onRefreshIntervalChange,
+  isAutoRefresh,
+  onToggleAutoRefresh
+}: FilterPanelProps) {
   const [localSearch, setLocalSearch] = useState(filters.search);
   const debouncedSearch = useDebounce(localSearch, 300);
 
@@ -51,9 +66,9 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Date Range Filter */}
-          <div className="space-y-2">
+          <div className="space-y-2 col-span-2">
             <Label>Intervalo de Datas</Label>
             <div className="grid grid-cols-2 gap-2">
               <Input
@@ -67,6 +82,28 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
                 value={filters.endDate || ""}
                 onChange={(e) => onFiltersChange({ ...filters, endDate: e.target.value })}
                 placeholder="Data final"
+              />
+            </div>
+          </div>
+
+          {/* Time Range Filter */}
+          <div className="space-y-2 col-span-2">
+            <Label className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Intervalo de Horas
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="time"
+                value={filters.startTime || ""}
+                onChange={(e) => onFiltersChange({ ...filters, startTime: e.target.value })}
+                placeholder="Hora inicial"
+              />
+              <Input
+                type="time"
+                value={filters.endTime || ""}
+                onChange={(e) => onFiltersChange({ ...filters, endTime: e.target.value })}
+                placeholder="Hora final"
               />
             </div>
           </div>
@@ -123,6 +160,48 @@ export function FilterPanel({ filters, onFiltersChange, onClearFilters }: Filter
                 className="pl-10"
               />
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+            </div>
+          </div>
+
+          {/* Auto Refresh Controls */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <RotateCcw className="w-4 h-4" />
+              Atualização Automática
+            </Label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={isAutoRefresh}
+                  onCheckedChange={onToggleAutoRefresh}
+                  id="auto-refresh"
+                />
+                <Label htmlFor="auto-refresh" className="text-sm">
+                  {isAutoRefresh ? "Ativa" : "Inativa"}
+                </Label>
+                {isAutoRefresh && (
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs">Atualizando</span>
+                  </div>
+                )}
+              </div>
+              <Select
+                value={refreshInterval.toString()}
+                onValueChange={(value) => onRefreshIntervalChange(Number(value))}
+                disabled={!isAutoRefresh}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Intervalo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5000">5 segundos</SelectItem>
+                  <SelectItem value="10000">10 segundos</SelectItem>
+                  <SelectItem value="30000">30 segundos</SelectItem>
+                  <SelectItem value="60000">1 minuto</SelectItem>
+                  <SelectItem value="300000">5 minutos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

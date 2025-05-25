@@ -91,13 +91,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             })}
           </nav>
 
-          {/* Footer */}
-          <div className="border-t border-slate-200 dark:border-gray-700 p-3">
-            <Button variant="ghost" className="w-full justify-start text-slate-600 dark:text-slate-300">
-              <Settings className="mr-3 h-4 w-4" />
-              Configurações
-            </Button>
-          </div>
+
         </div>
       </div>
     </>
