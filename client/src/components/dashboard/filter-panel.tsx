@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Search, Clock, RotateCcw, Play, Pause } from "lucide-react";
+import { Calendar, Search, Clock, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,15 +53,19 @@ export function FilterPanel({
   ];
 
   return (
-    <Card className="mb-8">
+    <Card className="mb-8 glass-card shadow-elegant border-0 bg-gradient-to-br from-white/60 to-white/40 dark:from-card/60 dark:to-card/40 backdrop-blur-xl">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Filtros</h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <SlidersHorizontal className="w-5 h-5 text-primary" />
+            Filtros Avançados
+          </h3>
           <Button
             variant="ghost"
             onClick={onClearFilters}
-            className="text-primary hover:text-blue-700"
+            className="text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
           >
+            <X className="w-4 h-4 mr-2" />
             Limpar Filtros
           </Button>
         </div>
