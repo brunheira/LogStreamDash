@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Circle, Database, ChevronDown } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -18,9 +18,13 @@ export default function Dashboard() {
     search: "",
     startDate: "",
     endDate: "",
+    startTime: "",
+    endTime: "",
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds default
+  const [isAutoRefresh, setIsAutoRefresh] = useState(false);
 
   // Fetch log stats
   const { data: stats, isLoading: statsLoading } = useQuery({
