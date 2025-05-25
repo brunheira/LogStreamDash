@@ -5,6 +5,8 @@ import { StatsCards } from "@/components/dashboard/stats-cards";
 import { FilterPanel } from "@/components/dashboard/filter-panel";
 import { LogTable } from "@/components/dashboard/log-table";
 import { LogTimeline } from "@/components/dashboard/log-timeline";
+import { PatternRecognition } from "@/components/dashboard/pattern-recognition";
+import { ConnectionHealth } from "@/components/dashboard/connection-health";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -238,6 +240,18 @@ export default function Dashboard() {
         onRefreshIntervalChange={setRefreshInterval}
         isAutoRefresh={isAutoRefresh}
         onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+      />
+
+      {/* Real-time Connection Health Indicators */}
+      <ConnectionHealth 
+        connections={connections || []}
+        selectedConnectionId={selectedConnectionId}
+      />
+
+      {/* Advanced Log Pattern Recognition */}
+      <PatternRecognition 
+        logs={logsData?.logs || []}
+        isLoading={logsLoading}
       />
 
       {/* Interactive Log Timeline */}
