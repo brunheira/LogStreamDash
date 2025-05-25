@@ -89,9 +89,23 @@ export default function Dashboard() {
       search: "",
       startDate: "",
       endDate: "",
+      startTime: "",
+      endTime: "",
     });
     setPage(1);
   };
+
+  // Auto refresh functionality
+  useEffect(() => {
+    if (!isAutoRefresh) return;
+
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/logs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/logs/stats"] });
+    }, refreshInterval);
+
+    return () => clearInterval(interval);
+  }, [isAutoRefresh, refreshInterval, queryClient]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -205,6 +219,10 @@ export default function Dashboard() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onClearFilters={handleClearFilters}
+        refreshInterval={refreshInterval}
+        onRefreshIntervalChange={setRefreshInterval}
+        isAutoRefresh={isAutoRefresh}
+        onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
       />
 
       {/* Log Table */}
