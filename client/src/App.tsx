@@ -1,68 +1,96 @@
-import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider } from '@/components/theme-provider'
-import { AuthProvider, useAuth } from '@/contexts/auth-context'
-import { Toaster } from '@/components/ui/toaster'
-import Dashboard from './app/page'
-import AuthPage from './pages/auth'
+import { useState } from "react";
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider, useAuth } from "@/contexts/auth-context";
+import { Header } from "@/components/layout/header";
+import { Sidebar } from "@/components/layout/sidebar";
+import { NewConnectionForm } from "@/components/connections/new-connection-form";
+import Dashboard from "@/pages/dashboard";
+import Connections from "@/pages/connections";
+import ConnectionHealthPage from "@/pages/connection-health";
+import PatternAnalysisPage from "@/pages/pattern-analysis";
+import LogTimelinePage from "@/pages/log-timeline";
+import StatisticsPage from "@/pages/statistics";
+import AuthPage from "@/pages/auth";
+import NotFound from "@/pages/not-found";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
+function AuthenticatedApp() {
+  const [showNewConnectionModal, setShowNewConnectionModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAuth()
-  
-  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'user:', user)
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />
-  }
-  
-  return <>{children}</>
+  const handleNewConnection = () => {
+    setShowNewConnectionModal(true);
+  };
+
+  const handleNewConnectionSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'lg:ml-0' : ''}`}>
+        <Header 
+          onNewConnection={handleNewConnection} 
+          onToggleSidebar={toggleSidebar}
+          sidebarOpen={sidebarOpen}
+        />
+        <main className="flex-1 overflow-auto">
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/connections" component={Connections} />
+            <Route path="/connection-health" component={ConnectionHealthPage} />
+            <Route path="/pattern-analysis" component={PatternAnalysisPage} />
+            <Route path="/log-timeline" component={LogTimelinePage} />
+            <Route path="/statistics" component={StatisticsPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
+      </div>
+      <NewConnectionForm
+        open={showNewConnectionModal}
+        onOpenChange={setShowNewConnectionModal}
+        onSuccess={handleNewConnectionSuccess}
+      />
+    </div>
+  );
 }
 
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/auth" element={<AuthPage />} />
-      <Route 
-        path="/" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  )
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
+
+  return <AuthenticatedApp />;
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
+      <ThemeProvider defaultTheme="system" storageKey="rediswatch-theme">
         <AuthProvider>
-          <div className="min-h-screen bg-background">
-            <AppRoutes />
+          <TooltipProvider>
+            <AppContent />
             <Toaster />
-          </div>
+          </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
