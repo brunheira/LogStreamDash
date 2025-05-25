@@ -53,11 +53,14 @@ export default function AuthPage() {
       return response.json()
     },
     onSuccess: (data) => {
+      console.log('Login success - data:', data)
       login(data.user)
+      console.log('After login() call')
       toast({
         title: 'Login successful',
         description: 'Welcome back!',
       })
+      console.log('About to navigate to /')
       navigate('/', { replace: true })
     },
     onError: () => {

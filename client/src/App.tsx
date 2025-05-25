@@ -17,7 +17,9 @@ const queryClient = new QueryClient({
 })
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'user:', user)
   
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />
