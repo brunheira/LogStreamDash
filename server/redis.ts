@@ -105,6 +105,22 @@ export class RedisService {
         filteredLogs = filteredLogs.filter(log => log.timestamp && log.timestamp <= endDate);
       }
 
+      if (filters.startTime) {
+        filteredLogs = filteredLogs.filter(log => {
+          if (!log.timestamp) return false;
+          const logTime = log.timestamp.toTimeString().slice(0, 5); // HH:MM format
+          return logTime >= filters.startTime;
+        });
+      }
+
+      if (filters.endTime) {
+        filteredLogs = filteredLogs.filter(log => {
+          if (!log.timestamp) return false;
+          const logTime = log.timestamp.toTimeString().slice(0, 5); // HH:MM format
+          return logTime <= filters.endTime;
+        });
+      }
+
       // Ordenar por timestamp (mais recente primeiro)
       filteredLogs.sort((a, b) => {
         const timeA = a.timestamp ? a.timestamp.getTime() : 0;

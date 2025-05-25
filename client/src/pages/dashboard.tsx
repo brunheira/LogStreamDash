@@ -4,6 +4,7 @@ import { Circle, Database, ChevronDown } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { FilterPanel } from "@/components/dashboard/filter-panel";
 import { LogTable } from "@/components/dashboard/log-table";
+import { LogTimeline } from "@/components/dashboard/log-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [pageSize, setPageSize] = useState(20);
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds default
   const [isAutoRefresh, setIsAutoRefresh] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<{ start: string; end: string } | undefined>();
 
   // Fetch log stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -49,6 +51,8 @@ export default function Dashboard() {
       if (filters.search) searchParams.set("search", filters.search);
       if (filters.startDate) searchParams.set("startDate", filters.startDate);
       if (filters.endDate) searchParams.set("endDate", filters.endDate);
+      if (filters.startTime) searchParams.set("startTime", filters.startTime);
+      if (filters.endTime) searchParams.set("endTime", filters.endTime);
       searchParams.set("page", page.toString());
       searchParams.set("limit", pageSize.toString());
 
