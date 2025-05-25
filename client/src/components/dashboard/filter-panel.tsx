@@ -114,8 +114,8 @@ export function FilterPanel({
             </div>
           </div>
 
-          {/* Second Row - Level, Service, Search, and Auto Refresh */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Second Row - Level, Service, and Search */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Log Level Filter */}
             <div className="space-y-2">
               <Label>Nível de Log</Label>
@@ -170,14 +170,21 @@ export function FilterPanel({
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
               </div>
             </div>
+          </div>
 
-            {/* Auto Refresh Controls */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <RotateCcw className="w-4 h-4" />
-                Atualização Automática
-              </Label>
-              <div className="flex items-center gap-3">
+          {/* Auto Refresh Section */}
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="flex items-center gap-2 text-base font-medium">
+                  <RotateCcw className="w-4 h-4" />
+                  Atualização Automática
+                </Label>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Configure a atualização automática dos logs
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={isAutoRefresh}
@@ -199,7 +206,7 @@ export function FilterPanel({
                   onValueChange={(value) => onRefreshIntervalChange(Number(value))}
                   disabled={!isAutoRefresh}
                 >
-                  <SelectTrigger className="w-full min-w-[120px]">
+                  <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Intervalo" />
                   </SelectTrigger>
                   <SelectContent>
