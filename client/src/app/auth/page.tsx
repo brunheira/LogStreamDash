@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,7 +23,7 @@ interface RegisterData {
 }
 
 export default function AuthPage() {
-  const router = useRouter()
+
   const { login } = useAuth()
   const { toast } = useToast()
 
@@ -59,7 +58,7 @@ export default function AuthPage() {
         title: 'Login successful',
         description: 'Welcome back!',
       })
-      router.push('/')
+      window.location.href = '/'
     },
     onError: () => {
       toast({
