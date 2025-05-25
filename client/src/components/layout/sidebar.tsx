@@ -17,36 +17,30 @@ const sidebarItems = [
   },
 ];
 
-const dashboardSections = [
+const dashboardPages = [
   { 
     name: "Status das Conexões", 
-    href: "/#connection-health", 
-    icon: Wifi,
+    href: "/connection-health", 
+    icon: Activity,
     description: "Monitoramento em tempo real"
   },
   { 
     name: "Análise Inteligente", 
-    href: "/#pattern-recognition", 
+    href: "/pattern-analysis", 
     icon: Brain,
     description: "Detecção de padrões e anomalias"
   },
   { 
     name: "Timeline de Logs", 
-    href: "/#log-timeline", 
+    href: "/log-timeline", 
     icon: Clock,
     description: "Visualização temporal interativa"
   },
   { 
     name: "Estatísticas", 
-    href: "/#stats", 
+    href: "/statistics", 
     icon: BarChart3,
     description: "Métricas e resumos"
-  },
-  { 
-    name: "Exportação", 
-    href: "/#export", 
-    icon: Download,
-    description: "Download de logs (CSV/JSON)"
   },
 ];
 
@@ -131,52 +125,41 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             <Separator className="my-6" />
 
-            {/* Dashboard Sections */}
+            {/* Dashboard Pages */}
             <div className="space-y-1">
               <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
-                Seções do Dashboard
+                Páginas de Monitoramento
               </h3>
-              {dashboardSections.map((section) => {
-                const Icon = section.icon;
-                const isCurrentPage = location === "/";
+              {dashboardPages.map((page) => {
+                const Icon = page.icon;
+                const isActive = location === page.href;
                 
                 return (
-                  <button
-                    key={section.name}
-                    onClick={() => {
-                      if (section.href.startsWith("/#")) {
-                        // Se já estiver no dashboard, apenas rola para a seção
-                        if (location === "/") {
-                          const sectionId = section.href.replace("/#", "");
-                          const element = document.getElementById(sectionId);
-                          if (element) {
-                            element.scrollIntoView({ behavior: "smooth" });
-                          }
-                        } else {
-                          // Se não estiver no dashboard, navega primeiro
-                          window.location.href = section.href;
+                  <Link key={page.href} href={page.href}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start h-auto py-3 px-3",
+                        isActive 
+                          ? "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-r-2 border-blue-600" 
+                          : "text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-gray-800"
+                      )}
+                      onClick={() => {
+                        // Close sidebar on mobile when navigating
+                        if (window.innerWidth < 1024) {
+                          onClose();
                         }
-                      }
-                      // Close sidebar on mobile
-                      if (window.innerWidth < 1024) {
-                        onClose();
-                      }
-                    }}
-                    className={cn(
-                      "w-full flex items-start px-3 py-3 text-sm rounded-md transition-colors text-left",
-                      isCurrentPage
-                        ? "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
-                    )}
-                  >
-                    <Icon className="mr-3 h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium">{section.name}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {section.description}
+                      }}
+                    >
+                      <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="font-medium text-sm">{page.name}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          {page.description}
+                        </div>
                       </div>
-                    </div>
-                  </button>
+                    </Button>
+                  </Link>
                 );
               })}
             </div>

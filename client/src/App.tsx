@@ -11,6 +11,10 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { NewConnectionForm } from "@/components/connections/new-connection-form";
 import Dashboard from "@/pages/dashboard";
 import Connections from "@/pages/connections";
+import ConnectionHealthPage from "@/pages/connection-health";
+import PatternAnalysisPage from "@/pages/pattern-analysis";
+import LogTimelinePage from "@/pages/log-timeline";
+import StatisticsPage from "@/pages/statistics";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
