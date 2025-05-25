@@ -7,6 +7,7 @@ import { LogTable } from "@/components/dashboard/log-table";
 import { LogTimeline } from "@/components/dashboard/log-timeline";
 import { PatternRecognition } from "@/components/dashboard/pattern-recognition";
 import { ConnectionHealth } from "@/components/dashboard/connection-health";
+import { LogExport } from "@/components/dashboard/log-export";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -260,6 +261,16 @@ export default function Dashboard() {
         onTimeRangeSelect={handleTimeRangeSelect}
         selectedTimeRange={selectedTimeRange}
       />
+
+      {/* Export Controls */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Logs da Conexão</h2>
+        <LogExport
+          logs={logsData?.logs || []}
+          filters={filters}
+          totalLogs={logsData?.total || 0}
+        />
+      </div>
 
       {/* Log Table */}
       <LogTable
