@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { Toaster } from '@/components/ui/toaster'
 import Dashboard from './app/page'
-import AuthPage from './app/auth/page'
+import AuthPage from './pages/auth'
 
 const queryClient = new QueryClient({
   defaultOptions: {
