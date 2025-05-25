@@ -177,14 +177,14 @@ export function FilterPanel({
                 <RotateCcw className="w-4 h-4" />
                 Atualização Automática
               </Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Switch
                     checked={isAutoRefresh}
                     onCheckedChange={onToggleAutoRefresh}
                     id="auto-refresh"
                   />
-                  <Label htmlFor="auto-refresh" className="text-sm">
+                  <Label htmlFor="auto-refresh" className="text-sm whitespace-nowrap">
                     {isAutoRefresh ? "Ativa" : "Inativa"}
                   </Label>
                   {isAutoRefresh && (
@@ -199,7 +199,7 @@ export function FilterPanel({
                   onValueChange={(value) => onRefreshIntervalChange(Number(value))}
                   disabled={!isAutoRefresh}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full min-w-[120px]">
                     <SelectValue placeholder="Intervalo" />
                   </SelectTrigger>
                   <SelectContent>
