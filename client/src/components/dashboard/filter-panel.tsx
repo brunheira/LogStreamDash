@@ -53,17 +53,17 @@ export function FilterPanel({
   ];
 
   return (
-    <Card className="mb-8 glass-card shadow-elegant border-0 bg-gradient-to-br from-white/60 to-white/40 dark:from-card/60 dark:to-card/40 backdrop-blur-xl">
+    <Card className="mb-8">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <SlidersHorizontal className="w-5 h-5 text-primary" />
-            Filtros Avançados
+            Filtros
           </h3>
           <Button
             variant="ghost"
             onClick={onClearFilters}
-            className="text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4 mr-2" />
             Limpar Filtros
