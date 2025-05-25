@@ -221,15 +221,17 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards */}
-        <StatsCards
-          stats={{
-            totalLogs: stats?.totalLogs ?? 0,
-            errors24h: stats?.errors24h ?? 0,
-            warnings24h: stats?.warnings24h ?? 0,
-            successRate: stats?.successRate ?? 100
-          }}
-          isLoading={statsLoading}
-        />
+        <div id="stats">
+          <StatsCards
+            stats={{
+              totalLogs: stats?.totalLogs ?? 0,
+              errors24h: stats?.errors24h ?? 0,
+              warnings24h: stats?.warnings24h ?? 0,
+              successRate: stats?.successRate ?? 100
+            }}
+            isLoading={statsLoading}
+          />
+        </div>
       </div>
 
       {/* Filter Panel */}
@@ -244,26 +246,32 @@ export default function Dashboard() {
       />
 
       {/* Real-time Connection Health Indicators */}
-      <ConnectionHealth 
-        connections={connections || []}
-        selectedConnectionId={selectedConnectionId}
-      />
+      <div id="connection-health">
+        <ConnectionHealth 
+          connections={connections || []}
+          selectedConnectionId={selectedConnectionId}
+        />
+      </div>
 
       {/* Advanced Log Pattern Recognition */}
-      <PatternRecognition 
-        logs={logsData?.logs || []}
-        isLoading={logsLoading}
-      />
+      <div id="pattern-recognition">
+        <PatternRecognition 
+          logs={logsData?.logs || []}
+          isLoading={logsLoading}
+        />
+      </div>
 
       {/* Interactive Log Timeline */}
-      <LogTimeline
-        logs={logsData?.logs || []}
-        onTimeRangeSelect={handleTimeRangeSelect}
-        selectedTimeRange={selectedTimeRange}
-      />
+      <div id="log-timeline">
+        <LogTimeline
+          logs={logsData?.logs || []}
+          onTimeRangeSelect={handleTimeRangeSelect}
+          selectedTimeRange={selectedTimeRange}
+        />
+      </div>
 
       {/* Export Controls */}
-      <div className="flex justify-between items-center mb-4">
+      <div id="export" className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Logs da Conexão</h2>
         <LogExport
           logs={logsData?.logs || []}
