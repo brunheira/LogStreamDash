@@ -17,17 +17,15 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
       title: "Total de Logs",
       value: stats.totalLogs.toLocaleString(),
       icon: FileText,
-      gradient: "from-blue-500/20 to-cyan-500/20",
-      iconBg: "bg-blue-500/10 backdrop-blur-sm",
-      iconColor: "text-blue-500",
-      valueColor: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+      valueColor: "text-primary",
     },
     {
       title: "Erros (24h)",
       value: stats.errors24h.toString(),
       icon: AlertCircle,
-      gradient: "from-red-500/20 to-pink-500/20",
-      iconBg: "bg-red-500/10 backdrop-blur-sm",
+      iconBg: "bg-red-500/10",
       iconColor: "text-red-500",
       valueColor: "text-red-600 dark:text-red-400",
     },
@@ -35,8 +33,7 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
       title: "Avisos (24h)",
       value: stats.warnings24h.toString(),
       icon: AlertTriangle,
-      gradient: "from-yellow-500/20 to-orange-500/20",
-      iconBg: "bg-yellow-500/10 backdrop-blur-sm",
+      iconBg: "bg-yellow-500/10",
       iconColor: "text-yellow-500",
       valueColor: "text-yellow-600 dark:text-yellow-400",
     },
@@ -44,8 +41,7 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
       title: "Taxa de Sucesso",
       value: `${stats.successRate.toFixed(1)}%`,
       icon: CheckCircle,
-      gradient: "from-green-500/20 to-emerald-500/20",
-      iconBg: "bg-green-500/10 backdrop-blur-sm",
+      iconBg: "bg-green-500/10",
       iconColor: "text-green-500",
       valueColor: "text-green-600 dark:text-green-400",
     },
@@ -55,14 +51,14 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="glass-card shadow-elegant border-0 bg-gradient-to-br from-white/50 to-white/30 dark:from-card/50 dark:to-card/30">
+          <Card key={i} className="border shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-3">
-                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg w-24 shimmer"></div>
-                  <div className="h-8 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded-lg w-20 shimmer"></div>
+                  <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
+                  <div className="h-8 bg-muted rounded w-20 animate-pulse"></div>
                 </div>
-                <div className="w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-xl shimmer"></div>
+                <div className="w-12 h-12 bg-muted rounded-lg animate-pulse"></div>
               </div>
             </CardContent>
           </Card>
@@ -78,7 +74,7 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
         return (
           <Card 
             key={stat.title} 
-            className={`glass-card shadow-elegant hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0 bg-gradient-to-br ${stat.gradient} backdrop-blur-xl`}
+            className="border shadow-sm hover:shadow-md transition-shadow duration-200"
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -86,12 +82,12 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
                   <p className="text-sm font-medium text-muted-foreground">
                     {stat.title}
                   </p>
-                  <p className={`text-3xl font-bold tracking-tight ${stat.valueColor}`}>
+                  <p className={`text-2xl font-bold ${stat.valueColor}`}>
                     {stat.value}
                   </p>
                 </div>
-                <div className={`w-14 h-14 ${stat.iconBg} rounded-xl flex items-center justify-center ring-1 ring-white/20 dark:ring-white/10`}>
-                  <Icon className={`w-7 h-7 ${stat.iconColor}`} />
+                <div className={`w-12 h-12 ${stat.iconBg} rounded-lg flex items-center justify-center`}>
+                  <Icon className={`w-6 h-6 ${stat.iconColor}`} />
                 </div>
               </div>
             </CardContent>
