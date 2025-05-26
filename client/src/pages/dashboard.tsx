@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Circle, Database, ChevronDown } from "lucide-react";
+import { Circle, Database, ChevronDown, Eye, EyeOff, Settings } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { FilterPanel } from "@/components/dashboard/filter-panel";
 import { LogTable } from "@/components/dashboard/log-table";
@@ -11,7 +11,9 @@ import { LogExport } from "@/components/dashboard/log-export";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -30,6 +32,14 @@ export default function Dashboard() {
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds default
   const [isAutoRefresh, setIsAutoRefresh] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState<{ start: string; end: string } | undefined>();
+  
+  // Section visibility states
+  const [sectionVisibility, setSectionVisibility] = useState({
+    stats: true,
+    connectionHealth: true,
+    patternRecognition: true,
+    logTimeline: true,
+  });
 
   // Fetch log stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -139,6 +149,13 @@ export default function Dashboard() {
     setPage(1);
   };
 
+  const toggleSectionVisibility = (section: keyof typeof sectionVisibility) => {
+    setSectionVisibility(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Dashboard Header */}
@@ -172,6 +189,72 @@ export default function Dashboard() {
                 Nenhuma conexão configurada
               </span>
             )}
+            
+            {/* Section Visibility Controls */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Seções
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="end" className="w-64">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium mb-3">Ocultar/Mostrar Seções</p>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Estatísticas</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleSectionVisibility('stats')}
+                        className="h-6 w-6 p-0"
+                      >
+                        {sectionVisibility.stats ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Saúde das Conexões</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleSectionVisibility('connectionHealth')}
+                        className="h-6 w-6 p-0"
+                      >
+                        {sectionVisibility.connectionHealth ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Reconhecimento de Padrões</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleSectionVisibility('patternRecognition')}
+                        className="h-6 w-6 p-0"
+                      >
+                        {sectionVisibility.patternRecognition ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Linha do Tempo</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleSectionVisibility('logTimeline')}
+                        className="h-6 w-6 p-0"
+                      >
+                        {sectionVisibility.logTimeline ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
@@ -221,17 +304,19 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards */}
-        <div id="stats">
-          <StatsCards
-            stats={{
-              totalLogs: stats?.totalLogs ?? 0,
-              errors24h: stats?.errors24h ?? 0,
-              warnings24h: stats?.warnings24h ?? 0,
-              successRate: stats?.successRate ?? 100
-            }}
-            isLoading={statsLoading}
-          />
-        </div>
+        {sectionVisibility.stats && (
+          <div id="stats">
+            <StatsCards
+              stats={{
+                totalLogs: stats?.totalLogs ?? 0,
+                errors24h: stats?.errors24h ?? 0,
+                warnings24h: stats?.warnings24h ?? 0,
+                successRate: stats?.successRate ?? 100
+              }}
+              isLoading={statsLoading}
+            />
+          </div>
+        )}
       </div>
 
       {/* Filter Panel */}
@@ -246,29 +331,35 @@ export default function Dashboard() {
       />
 
       {/* Real-time Connection Health Indicators */}
-      <div id="connection-health">
-        <ConnectionHealth 
-          connections={connections || []}
-          selectedConnectionId={selectedConnectionId}
-        />
-      </div>
+      {sectionVisibility.connectionHealth && (
+        <div id="connection-health">
+          <ConnectionHealth 
+            connections={connections || []}
+            selectedConnectionId={selectedConnectionId}
+          />
+        </div>
+      )}
 
       {/* Advanced Log Pattern Recognition */}
-      <div id="pattern-recognition">
-        <PatternRecognition 
-          logs={logsData?.logs || []}
-          isLoading={logsLoading}
-        />
-      </div>
+      {sectionVisibility.patternRecognition && (
+        <div id="pattern-recognition">
+          <PatternRecognition 
+            logs={logsData?.logs || []}
+            isLoading={logsLoading}
+          />
+        </div>
+      )}
 
       {/* Interactive Log Timeline */}
-      <div id="log-timeline">
-        <LogTimeline
-          logs={logsData?.logs || []}
-          onTimeRangeSelect={handleTimeRangeSelect}
-          selectedTimeRange={selectedTimeRange}
-        />
-      </div>
+      {sectionVisibility.logTimeline && (
+        <div id="log-timeline">
+          <LogTimeline
+            logs={logsData?.logs || []}
+            onTimeRangeSelect={handleTimeRangeSelect}
+            selectedTimeRange={selectedTimeRange}
+          />
+        </div>
+      )}
 
       {/* Export Controls */}
       <div id="export" className="flex justify-between items-center mb-4">
