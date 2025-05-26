@@ -17,32 +17,7 @@ const sidebarItems = [
   },
 ];
 
-const dashboardPages = [
-  { 
-    name: "Status das Conexões", 
-    href: "/connection-health", 
-    icon: Activity,
-    description: "Monitoramento em tempo real"
-  },
-  { 
-    name: "Análise Inteligente", 
-    href: "/pattern-analysis", 
-    icon: Brain,
-    description: "Detecção de padrões e anomalias"
-  },
-  { 
-    name: "Timeline de Logs", 
-    href: "/log-timeline", 
-    icon: Clock,
-    description: "Visualização temporal interativa"
-  },
-  { 
-    name: "Estatísticas", 
-    href: "/statistics", 
-    icon: BarChart3,
-    description: "Métricas e resumos"
-  },
-];
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -117,47 +92,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     >
                       <Icon className="mr-3 h-4 w-4" />
                       {item.title}
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <Separator className="my-6" />
-
-            {/* Dashboard Pages */}
-            <div className="space-y-1">
-              <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
-                Páginas de Monitoramento
-              </h3>
-              {dashboardPages.map((page) => {
-                const Icon = page.icon;
-                const isActive = location === page.href;
-                
-                return (
-                  <Link key={page.href} href={page.href}>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start h-auto py-3 px-3",
-                        isActive 
-                          ? "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-r-2 border-blue-600" 
-                          : "text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-gray-800"
-                      )}
-                      onClick={() => {
-                        // Close sidebar on mobile when navigating
-                        if (window.innerWidth < 1024) {
-                          onClose();
-                        }
-                      }}
-                    >
-                      <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
-                      <div className="flex-1 min-w-0 text-left">
-                        <div className="font-medium text-sm">{page.name}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {page.description}
-                        </div>
-                      </div>
                     </Button>
                   </Link>
                 );
