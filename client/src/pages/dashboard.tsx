@@ -191,18 +191,14 @@ export default function Dashboard() {
             )}
             
             {/* Section Visibility Controls */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Seções
-                    <ChevronDown className="w-4 h-4 ml-2" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" align="end" className="w-64">
+            <div className="relative">
+              <Card className="border-0 shadow-lg">
+                <CardContent className="p-3">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium mb-3">Ocultar/Mostrar Seções</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Settings className="w-4 h-4" />
+                      <span className="text-sm font-medium">Controle de Seções</span>
+                    </div>
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Estatísticas</span>
@@ -212,7 +208,7 @@ export default function Dashboard() {
                         onClick={() => toggleSectionVisibility('stats')}
                         className="h-6 w-6 p-0"
                       >
-                        {sectionVisibility.stats ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        {sectionVisibility.stats ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
                       </Button>
                     </div>
                     
@@ -224,7 +220,7 @@ export default function Dashboard() {
                         onClick={() => toggleSectionVisibility('connectionHealth')}
                         className="h-6 w-6 p-0"
                       >
-                        {sectionVisibility.connectionHealth ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        {sectionVisibility.connectionHealth ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
                       </Button>
                     </div>
                     
@@ -236,7 +232,7 @@ export default function Dashboard() {
                         onClick={() => toggleSectionVisibility('patternRecognition')}
                         className="h-6 w-6 p-0"
                       >
-                        {sectionVisibility.patternRecognition ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        {sectionVisibility.patternRecognition ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
                       </Button>
                     </div>
                     
@@ -248,13 +244,13 @@ export default function Dashboard() {
                         onClick={() => toggleSectionVisibility('logTimeline')}
                         className="h-6 w-6 p-0"
                       >
-                        {sectionVisibility.logTimeline ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        {sectionVisibility.logTimeline ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
                       </Button>
                     </div>
                   </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
