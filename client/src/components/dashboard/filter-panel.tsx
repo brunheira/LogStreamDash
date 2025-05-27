@@ -45,11 +45,12 @@ export function FilterPanel({
     }
   }, [debouncedSearch, filters, onFiltersChange]);
 
-  const services = [
-    "auth-service",
-    "api-gateway",
-    "user-service",
-    "payment-service",
+  const usernames = [
+    "admin",
+    "system",
+    "api_user",
+    "background_worker",
+    "scheduler",
   ];
 
   return (

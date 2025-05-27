@@ -223,8 +223,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/logs", async (req, res) => {
     try {
       const filters = logFilterSchema.parse({
-        level: req.query.level,
-        service: req.query.service,
+        logLevel: req.query.logLevel || req.query.level, // Support both new and old field names for compatibility
+        username: req.query.username || req.query.service, // Support both new and old field names for compatibility
         search: req.query.search,
         startDate: req.query.startDate,
         endDate: req.query.endDate,

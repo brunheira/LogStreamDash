@@ -59,8 +59,8 @@ export default function Dashboard() {
     queryFn: async () => {
       const searchParams = new URLSearchParams();
       
-      if (filters.level) searchParams.set("level", filters.level);
-      if (filters.service) searchParams.set("service", filters.service);
+      if (filters.level) searchParams.set("logLevel", filters.level);
+      if (filters.service) searchParams.set("username", filters.service);
       if (filters.search) searchParams.set("search", filters.search);
       if (filters.startDate) searchParams.set("startDate", filters.startDate);
       if (filters.endDate) searchParams.set("endDate", filters.endDate);
