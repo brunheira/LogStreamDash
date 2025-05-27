@@ -18,7 +18,8 @@ export function formatTimestamp(date: Date | string): string {
 }
 
 export function getLogLevelColor(level: string): string {
-  switch (level) {
+  const normalizedLevel = level.toLowerCase();
+  switch (normalizedLevel) {
     case 'error':
       return 'bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400';
     case 'warning':
@@ -33,7 +34,8 @@ export function getLogLevelColor(level: string): string {
 }
 
 export function getLogLevelClass(level: string): string {
-  switch (level) {
+  const normalizedLevel = level.toLowerCase();
+  switch (normalizedLevel) {
     case 'error':
       return 'log-error';
     case 'warning':

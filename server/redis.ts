@@ -33,113 +33,84 @@ export class RedisService {
   async getLogsFromRedis(connection: RedisConnection, filters: any = {}): Promise<{ logs: Log[]; total: number }> {
     try {
       const redis = await this.connectToRedis(connection);
-      
-      // Buscar todas as chaves de log (tentando diferentes padrões)
-      let logKeys = await redis.keys('log:*');
-      
-      // Se não encontrar com 'log:*', tentar outros padrões comuns
-      if (logKeys.length === 0) {
-        const patterns = ['logs:*', '*:log:*', 'event:*', 'events:*'];
-        for (const pattern of patterns) {
-          logKeys = await redis.keys(pattern);
-          if (logKeys.length > 0) break;
-        }
-      }
-      
-      if (logKeys.length === 0) {
+
+      // Seleciona o banco 3 se necessário
+      await redis.select(3);
+
+      const exists = await redis.exists("LOGS");
+      if (!exists) {
         return { logs: [], total: 0 };
       }
 
-      // Buscar dados de todos os logs JSON
-      const pipeline = redis.pipeline();
-      logKeys.forEach(key => {
-        pipeline.get(key); // Usar GET para obter o JSON completo
-      });
-      
-      const results = await pipeline.exec();
-      
-      if (!results) {
-        return { logs: [], total: 0 };
-      }
+      // Lê todos os itens da lista "LOGS"
+      const entries = await redis.lrange("LOGS", 0, -1);
 
-      // Converter dados JSON do Redis para formato de Log
       const logs: Log[] = [];
-      
-      results.forEach((result, index) => {
-        if (result && result[1] && typeof result[1] === 'string') {
-          try {
-            const logJson = JSON.parse(result[1] as string);
-            
-            // Extrair ID do log da chave (log:1 -> 1)
-            const logId = parseInt(logKeys[index].split(':')[1]);
-            
-            // Converter formato JSON para nosso schema
-            if (logJson.event_id && logJson.log_level && logJson.message && logJson.username && logJson.datetime) {
-              const log: Log = {
-                id: logId,
-                connectionId: connection.id.toString(),
-                eventId: logJson.event_id,
-                level: logJson.log_level.toUpperCase(), // INFO, ERROR, WARNING, DEBUG
-                service: logJson.service || 'unknown', // Se não tiver service, usar 'unknown'
-                message: logJson.message,
-                username: logJson.username,
-                timestamp: new Date(logJson.datetime),
-                metadata: { originalJson: logJson }, // Manter o JSON original como metadata
-              };
-              logs.push(log);
-            }
-          } catch (parseError) {
-            console.error(`Erro ao processar log JSON da chave ${logKeys[index]}:`, parseError);
+
+      entries.forEach((entry, index) => {
+        try {
+          const json = JSON.parse(entry);
+          if (json.event_id && json.log_level && json.message && json.username && json.datetime) {
+            const log: Log = {
+              id: index,
+              connectionId: connection.id.toString(),
+              eventId: json.event_id,
+              level: json.log_level.toUpperCase(),
+              service: json.service || "unknown",
+              message: json.message,
+              username: json.username,
+              timestamp: new Date(json.datetime),
+              metadata: { originalJson: json }
+            };
+            logs.push(log);
           }
+        } catch (err) {
+          console.error(`Erro ao parsear log[${index}]:`, err);
         }
       });
 
-      // Aplicar filtros
-      let filteredLogs = logs;
+      // Filtros
+      let filtered = logs;
 
-      if (filters.level && filters.level !== 'all') {
-        filteredLogs = filteredLogs.filter(log => log.level.toLowerCase() === filters.level.toLowerCase());
+      if (filters.level && filters.level !== "all") {
+        filtered = filtered.filter(log => log.level.toLowerCase() === filters.level.toLowerCase());
       }
 
-      if (filters.service && filters.service !== 'all') {
-        filteredLogs = filteredLogs.filter(log => log.service === filters.service);
+      if (filters.service && filters.service !== "all") {
+        filtered = filtered.filter(log => log.service === filters.service);
       }
 
       if (filters.search) {
-        filteredLogs = filteredLogs.filter(log => 
-          log.message.toLowerCase().includes(filters.search.toLowerCase()) ||
-          log.username.toLowerCase().includes(filters.search.toLowerCase()) ||
-          log.eventId.toLowerCase().includes(filters.search.toLowerCase())
+        const query = filters.search.toLowerCase();
+        filtered = filtered.filter(log =>
+          log.message.toLowerCase().includes(query) ||
+          log.username.toLowerCase().includes(query) ||
+          log.eventId.toLowerCase().includes(query)
         );
       }
 
       if (filters.startDate) {
-        const startDate = new Date(filters.startDate);
-        filteredLogs = filteredLogs.filter(log => log.timestamp && log.timestamp >= startDate);
+        const start = new Date(filters.startDate);
+        filtered = filtered.filter(log => log.timestamp >= start);
       }
 
       if (filters.endDate) {
-        const endDate = new Date(filters.endDate);
-        filteredLogs = filteredLogs.filter(log => log.timestamp && log.timestamp <= endDate);
+        const end = new Date(filters.endDate);
+        filtered = filtered.filter(log => log.timestamp <= end);
       }
 
-      // Ordenar por timestamp (mais recente primeiro)
-      filteredLogs.sort((a, b) => {
-        const timeA = a.timestamp ? a.timestamp.getTime() : 0;
-        const timeB = b.timestamp ? b.timestamp.getTime() : 0;
-        return timeB - timeA;
-      });
+      // Ordenação decrescente por data
+      filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-      // Aplicar paginação
-      const page = filters.page || 1;
-      const pageSize = filters.pageSize || 10;
+      // Paginação
+      const page = Math.max(1, parseInt(filters.page) || 1);
+      const pageSize = Math.max(1, parseInt(filters.pageSize) || 10);
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
-      const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
 
       return {
-        logs: paginatedLogs,
-        total: filteredLogs.length
+        logs: filtered.slice(startIndex, endIndex),
+        total: filtered.length
       };
 
     } catch (error) {

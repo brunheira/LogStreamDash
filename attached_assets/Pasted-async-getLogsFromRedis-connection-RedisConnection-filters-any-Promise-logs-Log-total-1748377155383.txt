@@ -1,0 +1,88 @@
+async getLogsFromRedis(connection: RedisConnection, filters: any = {}): Promise<{ logs: Log[]; total: number }> {
+  try {
+    const redis = await this.connectToRedis(connection);
+
+    // Seleciona o banco 3 se necessário
+    await redis.select(3);
+
+    const exists = await redis.exists("LOGS");
+    if (!exists) {
+      return { logs: [], total: 0 };
+    }
+
+    // Lê todos os itens da lista "LOGS"
+    const entries = await redis.lrange("LOGS", 0, -1);
+
+    const logs: Log[] = [];
+
+    entries.forEach((entry, index) => {
+      try {
+        const json = JSON.parse(entry);
+        if (json.event_id && json.log_level && json.message && json.username && json.datetime) {
+          const log: Log = {
+            id: index,
+            connectionId: connection.id.toString(),
+            eventId: json.event_id,
+            level: json.log_level.toUpperCase(),
+            service: json.service || "unknown",
+            message: json.message,
+            username: json.username,
+            timestamp: new Date(json.datetime),
+            metadata: { originalJson: json }
+          };
+          logs.push(log);
+        }
+      } catch (err) {
+        console.error(`Erro ao parsear log[${index}]:`, err);
+      }
+    });
+
+    // Filtros
+    let filtered = logs;
+
+    if (filters.level && filters.level !== "all") {
+      filtered = filtered.filter(log => log.level.toLowerCase() === filters.level.toLowerCase());
+    }
+
+    if (filters.service && filters.service !== "all") {
+      filtered = filtered.filter(log => log.service === filters.service);
+    }
+
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(log =>
+        log.message.toLowerCase().includes(query) ||
+        log.username.toLowerCase().includes(query) ||
+        log.eventId.toLowerCase().includes(query)
+      );
+    }
+
+    if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      filtered = filtered.filter(log => log.timestamp >= start);
+    }
+
+    if (filters.endDate) {
+      const end = new Date(filters.endDate);
+      filtered = filtered.filter(log => log.timestamp <= end);
+    }
+
+    // Ordenação decrescente por data
+    filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    // Paginação
+    const page = Math.max(1, parseInt(filters.page) || 1);
+    const pageSize = Math.max(1, parseInt(filters.pageSize) || 10);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+
+    return {
+      logs: filtered.slice(startIndex, endIndex),
+      total: filtered.length
+    };
+
+  } catch (error) {
+    console.error("Erro ao buscar logs do Redis:", error);
+    throw error;
+  }
+}
