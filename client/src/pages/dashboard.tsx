@@ -4,6 +4,7 @@ import { Circle, Database, ChevronDown } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { FilterPanel } from "@/components/dashboard/filter-panel";
 import { LogTable } from "@/components/dashboard/log-table";
+import { LogTimeline } from "@/components/dashboard/log-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -201,6 +202,12 @@ export default function Dashboard() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onClearFilters={handleClearFilters}
+      />
+
+      {/* Timeline Visualizer */}
+      <LogTimeline 
+        logs={logsData?.logs || []}
+        isLoading={logsLoading}
       />
 
       {/* Log Table */}
