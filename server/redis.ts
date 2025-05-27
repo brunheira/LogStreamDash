@@ -127,20 +127,19 @@ export class RedisService {
   }> {
     try {
       const redis = await this.connectToRedis(connection);
-      const logKeys = await redis.keys('log:*');
-      
-      if (logKeys.length === 0) {
+
+      // Seleciona o banco 3
+      await redis.select(3);
+
+      const exists = await redis.exists("LOGS");
+      if (!exists) {
         return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
       }
 
-      const pipeline = redis.pipeline();
-      logKeys.forEach(key => {
-        pipeline.hgetall(key);
-      });
-      
-      const results = await pipeline.exec();
-      
-      if (!results) {
+      // Lê todos os itens da lista "LOGS"
+      const entries = await redis.lrange("LOGS", 0, -1);
+
+      if (entries.length === 0) {
         return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
       }
 
@@ -152,24 +151,27 @@ export class RedisService {
       const now = new Date();
       const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-      results.forEach((result) => {
-        if (result && result[1] && typeof result[1] === 'object') {
-          const logData = result[1] as Record<string, string>;
+      entries.forEach((entry) => {
+        try {
+          const json = JSON.parse(entry);
           
-          if (logData.level && logData.timestamp) {
+          if (json.event_id && json.log_level && json.message && json.username && json.datetime) {
             totalLogs++;
-            const logTime = new Date(logData.timestamp);
+            const logTime = new Date(json.datetime);
+            const level = json.log_level.toLowerCase();
             
             if (logTime >= twentyFourHoursAgo) {
-              if (logData.level === 'error') {
+              if (level === 'error') {
                 errors24h++;
-              } else if (logData.level === 'warning') {
+              } else if (level === 'warning') {
                 warnings24h++;
-              } else if (logData.level === 'info' || logData.level === 'debug') {
+              } else if (level === 'info' || level === 'debug') {
                 successLogs++;
               }
             }
           }
+        } catch (parseError) {
+          console.error(`Erro ao processar estatísticas do log:`, parseError);
         }
       });
 
@@ -184,7 +186,7 @@ export class RedisService {
       };
 
     } catch (error) {
-      console.error('Error fetching stats from Redis:', error);
+      console.error("Erro ao buscar estatísticas do Redis:", error);
       return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
     }
   }
