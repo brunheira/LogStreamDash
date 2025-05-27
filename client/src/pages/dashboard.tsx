@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Circle, Database, ChevronDown, Eye, EyeOff, Settings } from "lucide-react";
+import { Circle, Database, ChevronDown } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { FilterPanel } from "@/components/dashboard/filter-panel";
 import { LogTable } from "@/components/dashboard/log-table";
-import { LogTimeline } from "@/components/dashboard/log-timeline";
-import { PatternRecognition } from "@/components/dashboard/pattern-recognition";
-import { ConnectionHealth } from "@/components/dashboard/connection-health";
-import { LogExport } from "@/components/dashboard/log-export";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -24,22 +18,9 @@ export default function Dashboard() {
     search: "",
     startDate: "",
     endDate: "",
-    startTime: "",
-    endTime: "",
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds default
-  const [isAutoRefresh, setIsAutoRefresh] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<{ start: string; end: string } | undefined>();
-  
-  // Section visibility states
-  const [sectionVisibility, setSectionVisibility] = useState({
-    stats: true,
-    connectionHealth: true,
-    patternRecognition: true,
-    logTimeline: true,
-  });
 
   // Fetch log stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -59,13 +40,11 @@ export default function Dashboard() {
     queryFn: async () => {
       const searchParams = new URLSearchParams();
       
-      if (filters.level) searchParams.set("logLevel", filters.level);
-      if (filters.service) searchParams.set("username", filters.service);
+      if (filters.level) searchParams.set("level", filters.level);
+      if (filters.service) searchParams.set("service", filters.service);
       if (filters.search) searchParams.set("search", filters.search);
       if (filters.startDate) searchParams.set("startDate", filters.startDate);
       if (filters.endDate) searchParams.set("endDate", filters.endDate);
-      if (filters.startTime) searchParams.set("startTime", filters.startTime);
-      if (filters.endTime) searchParams.set("endTime", filters.endTime);
       searchParams.set("page", page.toString());
       searchParams.set("limit", pageSize.toString());
 
@@ -106,23 +85,9 @@ export default function Dashboard() {
       search: "",
       startDate: "",
       endDate: "",
-      startTime: "",
-      endTime: "",
     });
     setPage(1);
   };
-
-  // Auto refresh functionality
-  useEffect(() => {
-    if (!isAutoRefresh) return;
-
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["/api/logs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/logs/stats"] });
-    }, refreshInterval);
-
-    return () => clearInterval(interval);
-  }, [isAutoRefresh, refreshInterval, queryClient]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -136,24 +101,6 @@ export default function Dashboard() {
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/logs"] });
     queryClient.invalidateQueries({ queryKey: ["/api/logs/stats"] });
-  };
-
-  const handleTimeRangeSelect = (startTime: string, endTime: string) => {
-    if (startTime && endTime) {
-      setSelectedTimeRange({ start: startTime, end: endTime });
-      setFilters(prev => ({ ...prev, startTime, endTime }));
-    } else {
-      setSelectedTimeRange(undefined);
-      setFilters(prev => ({ ...prev, startTime: '', endTime: '' }));
-    }
-    setPage(1);
-  };
-
-  const toggleSectionVisibility = (section: keyof typeof sectionVisibility) => {
-    setSectionVisibility(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
   };
 
   return (
@@ -189,68 +136,6 @@ export default function Dashboard() {
                 Nenhuma conexão configurada
               </span>
             )}
-            
-            {/* Section Visibility Controls */}
-            <div className="relative">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-3">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Settings className="w-4 h-4" />
-                      <span className="text-sm font-medium">Controle de Seções</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Estatísticas</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleSectionVisibility('stats')}
-                        className="h-6 w-6 p-0"
-                      >
-                        {sectionVisibility.stats ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Saúde das Conexões</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleSectionVisibility('connectionHealth')}
-                        className="h-6 w-6 p-0"
-                      >
-                        {sectionVisibility.connectionHealth ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Reconhecimento de Padrões</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleSectionVisibility('patternRecognition')}
-                        className="h-6 w-6 p-0"
-                      >
-                        {sectionVisibility.patternRecognition ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Linha do Tempo</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleSectionVisibility('logTimeline')}
-                        className="h-6 w-6 p-0"
-                      >
-                        {sectionVisibility.logTimeline ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
 
@@ -300,19 +185,15 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards */}
-        {sectionVisibility.stats && (
-          <div id="stats">
-            <StatsCards
-              stats={{
-                totalLogs: stats?.totalLogs ?? 0,
-                errors24h: stats?.errors24h ?? 0,
-                warnings24h: stats?.warnings24h ?? 0,
-                successRate: stats?.successRate ?? 100
-              }}
-              isLoading={statsLoading}
-            />
-          </div>
-        )}
+        <StatsCards
+          stats={{
+            totalLogs: stats?.totalLogs ?? 0,
+            errors24h: stats?.errors24h ?? 0,
+            warnings24h: stats?.warnings24h ?? 0,
+            successRate: stats?.successRate ?? 100
+          }}
+          isLoading={statsLoading}
+        />
       </div>
 
       {/* Filter Panel */}
@@ -320,52 +201,7 @@ export default function Dashboard() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onClearFilters={handleClearFilters}
-        refreshInterval={refreshInterval}
-        onRefreshIntervalChange={setRefreshInterval}
-        isAutoRefresh={isAutoRefresh}
-        onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
       />
-
-      {/* Real-time Connection Health Indicators */}
-      {sectionVisibility.connectionHealth && (
-        <div id="connection-health">
-          <ConnectionHealth 
-            connections={connections || []}
-            selectedConnectionId={selectedConnectionId}
-          />
-        </div>
-      )}
-
-      {/* Advanced Log Pattern Recognition */}
-      {sectionVisibility.patternRecognition && (
-        <div id="pattern-recognition">
-          <PatternRecognition 
-            logs={logsData?.logs || []}
-            isLoading={logsLoading}
-          />
-        </div>
-      )}
-
-      {/* Interactive Log Timeline */}
-      {sectionVisibility.logTimeline && (
-        <div id="log-timeline">
-          <LogTimeline
-            logs={logsData?.logs || []}
-            onTimeRangeSelect={handleTimeRangeSelect}
-            selectedTimeRange={selectedTimeRange}
-          />
-        </div>
-      )}
-
-      {/* Export Controls */}
-      <div id="export" className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Logs da Conexão</h2>
-        <LogExport
-          logs={logsData?.logs || []}
-          filters={filters}
-          totalLogs={logsData?.total || 0}
-        />
-      </div>
 
       {/* Log Table */}
       <LogTable
