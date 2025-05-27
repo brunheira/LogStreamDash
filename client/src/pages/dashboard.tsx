@@ -23,11 +23,6 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  // Fetch log stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/logs/stats"],
-  });
-
   // Fetch logs with filters
   const { data: logsData, isLoading: logsLoading } = useQuery({
     queryKey: [
@@ -54,6 +49,36 @@ export default function Dashboard() {
       return response.json();
     },
   });
+
+  // Calculate stats from filtered logs
+  const calculateStats = (logs: any[]) => {
+    if (!logs || logs.length === 0) {
+      return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
+    }
+
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const recentLogs = logs.filter(log => {
+      if (!log.timestamp) return false;
+      const logDate = new Date(log.timestamp);
+      return logDate >= twentyFourHoursAgo;
+    });
+
+    const errors24h = recentLogs.filter(log => log.level?.toLowerCase() === 'error').length;
+    const warnings24h = recentLogs.filter(log => log.level?.toLowerCase() === 'warning').length;
+    const totalRecent = recentLogs.length;
+    const successRate = totalRecent > 0 ? Math.round(((totalRecent - errors24h) / totalRecent) * 100) : 100;
+
+    return {
+      totalLogs: logs.length,
+      errors24h,
+      warnings24h,
+      successRate
+    };
+  };
+
+
 
   // Fetch connections
   const { data: connections = [] } = useQuery({
@@ -187,13 +212,8 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <StatsCards
-          stats={{
-            totalLogs: stats?.totalLogs ?? 0,
-            errors24h: stats?.errors24h ?? 0,
-            warnings24h: stats?.warnings24h ?? 0,
-            successRate: stats?.successRate ?? 100
-          }}
-          isLoading={statsLoading}
+          stats={calculateStats(logsData?.logs || [])}
+          isLoading={logsLoading}
         />
       </div>
 
