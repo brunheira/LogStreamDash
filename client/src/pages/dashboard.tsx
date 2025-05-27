@@ -205,10 +205,12 @@ export default function Dashboard() {
       />
 
       {/* Timeline Visualizer */}
-      <LogTimeline 
-        logs={logsData?.logs || []}
-        isLoading={logsLoading}
-      />
+      <div className="mb-8">
+        <LogTimeline 
+          logs={logsData?.logs || []}
+          isLoading={logsLoading}
+        />
+      </div>
 
       {/* Log Table */}
       <LogTable
