@@ -193,6 +193,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para adicionar log JSON de exemplo no Redis
+  app.post("/api/connections/:id/add-sample-log", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid connection ID" });
+      }
+
+      const connection = await storage.getRedisConnection(id);
+      if (!connection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+
+      // Log de exemplo no formato JSON especificado
+      const sampleLog = {
+        event_id: "051c2bef-1d44-46d3-ba54-0c0c4c096141",
+        log_level: "INFO",
+        message: "Log de teste do sistema",
+        username: "system",
+        datetime: "2025-01-27 19:30:12+00",
+        service: "test-service"
+      };
+
+      const redis = await redisService.connectToRedis(connection);
+      await redis.set(`log:${Date.now()}`, JSON.stringify(sampleLog));
+
+      res.json({ success: true, message: "Log de exemplo adicionado ao Redis", log: sampleLog });
+    } catch (error) {
+      console.error("Erro ao adicionar log de exemplo:", error);
+      res.status(500).json({ message: "Failed to add sample log" });
+    }
+  });
+
   app.get("/api/logs/stats", async (req, res) => {
     try {
       const stats = await storage.getLogStats();

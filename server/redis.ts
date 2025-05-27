@@ -34,8 +34,17 @@ export class RedisService {
     try {
       const redis = await this.connectToRedis(connection);
       
-      // Buscar todas as chaves de log (assumindo que os logs JSON estão armazenados com chaves log:*)
-      const logKeys = await redis.keys('log:*');
+      // Buscar todas as chaves de log (tentando diferentes padrões)
+      let logKeys = await redis.keys('log:*');
+      
+      // Se não encontrar com 'log:*', tentar outros padrões comuns
+      if (logKeys.length === 0) {
+        const patterns = ['logs:*', '*:log:*', 'event:*', 'events:*'];
+        for (const pattern of patterns) {
+          logKeys = await redis.keys(pattern);
+          if (logKeys.length > 0) break;
+        }
+      }
       
       if (logKeys.length === 0) {
         return { logs: [], total: 0 };
