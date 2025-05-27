@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Play, Pause, RotateCcw, Calendar } from "lucide-react";
+import { Clock, Play, Pause, RotateCcw, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { formatTimestamp, getLogLevelColor, getLogLevelClass } from "@/lib/utils";
 import type { Log } from "@shared/schema";
 
@@ -17,6 +17,7 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [speed, setSpeed] = useState(1000); // ms between animations
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Ordena logs por timestamp
   const sortedLogs = [...logs].sort((a, b) => {
@@ -85,13 +86,21 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
       <CardContent className="p-6">
         <div className="flex flex-col space-y-4">
           {/* Controles da Timeline */}
-          <div className="flex items-center justify-between border-b pb-4">
+          <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold">Timeline de Logs</h3>
-              <Badge variant="outline">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Timeline de Logs</h3>
+              <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                 {currentIndex + 1} / {filteredLogs.length}
               </Badge>
+              <Button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                size="sm"
+                variant="ghost"
+                className="ml-2"
+              >
+                {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              </Button>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -103,7 +112,7 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
                   setCurrentIndex(0);
                   setIsPlaying(false);
                 }}
-                className="px-3 py-1 border rounded-md text-sm"
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Todas as datas</option>
                 {availableDates.map(date => (
@@ -117,7 +126,7 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
               <select
                 value={speed}
                 onChange={(e) => setSpeed(Number(e.target.value))}
-                className="px-3 py-1 border rounded-md text-sm"
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value={500}>2x</option>
                 <option value={1000}>1x</option>
@@ -146,30 +155,40 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
           </div>
 
           {/* Barra de Progresso */}
-          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-            <motion.div
-              className="bg-blue-600 h-2 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ 
-                width: filteredLogs.length > 0 
-                  ? `${((currentIndex + 1) / filteredLogs.length) * 100}%` 
-                  : "0%" 
-              }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
+          {!isCollapsed && (
+            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+              <motion.div
+                className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: filteredLogs.length > 0 
+                    ? `${((currentIndex + 1) / filteredLogs.length) * 100}%` 
+                    : "0%" 
+                }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          )}
 
           {/* Timeline dos Logs */}
-          <div className="relative">
-            {filteredLogs.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum log encontrado para a data selecionada</p>
-              </div>
-            ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {/* Linha da Timeline */}
-                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600" />
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
+              >
+                {filteredLogs.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhum log encontrado para a data selecionada</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {/* Linha da Timeline */}
+                    <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 
                 <AnimatePresence>
                   {getVisibleLogs().map((log, index) => (
@@ -238,13 +257,15 @@ export function LogTimeline({ logs, isLoading }: LogTimelineProps) {
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </div>
+                  </div>
+                )}
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
           {/* Informações da Timeline */}
-          {filteredLogs.length > 0 && (
-            <div className="border-t pt-4">
+          {filteredLogs.length > 0 && !isCollapsed && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-gray-500">Total de Logs:</span>
