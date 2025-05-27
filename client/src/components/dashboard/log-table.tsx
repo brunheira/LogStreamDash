@@ -106,17 +106,17 @@ export function LogTable({
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4 flex-1">
                     <div className="flex-shrink-0">
-                      <Badge className={getLogLevelColor(log.logLevel || log.level)}>
-                        {(log.logLevel || log.level)?.toUpperCase()}
+                      <Badge className={getLogLevelColor(log.level)}>
+                        {log.level.toUpperCase()}
                       </Badge>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {log.username || log.service}
+                          {log.service}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {log.datetime ? formatTimestamp(log.datetime) : log.timestamp ? formatTimestamp(log.timestamp) : "N/A"}
+                          {log.timestamp ? formatTimestamp(log.timestamp) : "N/A"}
                         </span>
                       </div>
                       <p className="text-sm text-slate-700 dark:text-slate-300 font-mono">

@@ -5,89 +5,49 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
 import { NewConnectionForm } from "@/components/connections/new-connection-form";
 import Dashboard from "@/pages/dashboard";
 import Connections from "@/pages/connections";
-import ConnectionHealthPage from "@/pages/connection-health";
-import PatternAnalysisPage from "@/pages/pattern-analysis";
-import LogTimelinePage from "@/pages/log-timeline";
-import StatisticsPage from "@/pages/statistics";
-import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
-function AuthenticatedApp() {
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/connections" component={Connections} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
   const [showNewConnectionModal, setShowNewConnectionModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleNewConnection = () => {
     setShowNewConnectionModal(true);
   };
 
   const handleNewConnectionSuccess = () => {
+    // Invalidate connections query to refresh the data
     queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'lg:ml-0' : ''}`}>
-        <Header 
-          onNewConnection={handleNewConnection} 
-          onToggleSidebar={toggleSidebar}
-          sidebarOpen={sidebarOpen}
-        />
-        <main className="flex-1 overflow-auto">
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/connections" component={Connections} />
-            <Route path="/connection-health" component={ConnectionHealthPage} />
-            <Route path="/pattern-analysis" component={PatternAnalysisPage} />
-            <Route path="/log-timeline" component={LogTimelinePage} />
-            <Route path="/statistics" component={StatisticsPage} />
-            <Route component={NotFound} />
-          </Switch>
-        </main>
-      </div>
-      <NewConnectionForm
-        open={showNewConnectionModal}
-        onOpenChange={setShowNewConnectionModal}
-        onSuccess={handleNewConnectionSuccess}
-      />
-    </div>
-  );
-}
-
-function AppContent() {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) {
-    return <AuthPage />;
-  }
-
-  return <AuthenticatedApp />;
-}
-
-function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="rediswatch-theme">
-        <AuthProvider>
-          <TooltipProvider>
-            <AppContent />
-            <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+            <Header onNewConnection={handleNewConnection} />
+            <Router />
+          </div>
+          <Toaster />
+          <NewConnectionForm
+            open={showNewConnectionModal}
+            onOpenChange={setShowNewConnectionModal}
+            onSuccess={handleNewConnectionSuccess}
+          />
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
