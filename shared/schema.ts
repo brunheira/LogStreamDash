@@ -26,11 +26,12 @@ export const redisConnections = pgTable("redis_connections", {
 export const logs = pgTable("logs", {
   id: serial("id").primaryKey(),
   connectionId: text("connection_id").notNull(),
-  level: text("level").notNull(), // error, warning, info, debug
-  service: text("service").notNull(),
+  eventId: text("event_id").notNull(), // ID único do evento
+  logLevel: text("log_level").notNull(), // INFO, ERROR, WARN, DEBUG
   message: text("message").notNull(),
-  timestamp: timestamp("timestamp").defaultNow(),
-  metadata: json("metadata"), // additional fields like requestId, ip, etc.
+  username: text("username").notNull(), // Usuário que gerou o log
+  datetime: timestamp("datetime").notNull(), // Data e hora do evento
+  metadata: json("metadata"), // Dados adicionais (opcional)
 });
 
 // Relations
@@ -54,7 +55,7 @@ export const insertRedisConnectionSchema = createInsertSchema(redisConnections).
 
 export const insertLogSchema = createInsertSchema(logs).omit({
   id: true,
-  timestamp: true,
+  datetime: true,
 });
 
 export const updateRedisConnectionSchema = insertRedisConnectionSchema.partial().extend({
@@ -63,8 +64,8 @@ export const updateRedisConnectionSchema = insertRedisConnectionSchema.partial()
 });
 
 export const logFilterSchema = z.object({
-  level: z.string().optional(),
-  service: z.string().optional(),
+  logLevel: z.string().optional(),
+  username: z.string().optional(),
   search: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),

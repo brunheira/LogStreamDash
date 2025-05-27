@@ -34,16 +34,16 @@ export class RedisService {
     try {
       const redis = await this.connectToRedis(connection);
       
-      // Buscar todas as chaves de log
-      const logKeys = await redis.keys('log:*');
+      // Buscar todas as chaves de evento
+      const eventKeys = await redis.keys('event:*');
       
-      if (logKeys.length === 0) {
+      if (eventKeys.length === 0) {
         return { logs: [], total: 0 };
       }
 
-      // Buscar dados de todos os logs
+      // Buscar dados de todos os eventos
       const pipeline = redis.pipeline();
-      logKeys.forEach(key => {
+      eventKeys.forEach(key => {
         pipeline.hgetall(key);
       });
       
@@ -58,20 +58,21 @@ export class RedisService {
       
       results.forEach((result, index) => {
         if (result && result[1] && typeof result[1] === 'object') {
-          const logData = result[1] as Record<string, string>;
+          const eventData = result[1] as Record<string, string>;
           
-          // Extrair ID do log da chave (log:1 -> 1)
-          const logId = parseInt(logKeys[index].split(':')[1]);
+          // Extrair ID do evento da chave (event:1 -> 1)
+          const logId = parseInt(eventKeys[index].split(':')[1]);
           
-          if (logData.connectionId && logData.level && logData.service && logData.message) {
+          if (eventData.event_id && eventData.log_level && eventData.message && eventData.username && eventData.datetime) {
             const log: Log = {
               id: logId,
-              connectionId: logData.connectionId,
-              level: logData.level,
-              service: logData.service,
-              message: logData.message,
-              timestamp: logData.timestamp ? new Date(logData.timestamp) : new Date(),
-              metadata: logData.metadata ? JSON.parse(logData.metadata) : null,
+              connectionId: connection.id.toString(),
+              eventId: eventData.event_id,
+              logLevel: eventData.log_level,
+              message: eventData.message,
+              username: eventData.username,
+              datetime: new Date(eventData.datetime),
+              metadata: eventData.metadata ? JSON.parse(eventData.metadata) : null,
             };
             logs.push(log);
           }
@@ -81,12 +82,12 @@ export class RedisService {
       // Aplicar filtros
       let filteredLogs = logs;
 
-      if (filters.level) {
-        filteredLogs = filteredLogs.filter(log => log.level === filters.level);
+      if (filters.logLevel) {
+        filteredLogs = filteredLogs.filter(log => log.logLevel === filters.logLevel);
       }
 
-      if (filters.service) {
-        filteredLogs = filteredLogs.filter(log => log.service === filters.service);
+      if (filters.username) {
+        filteredLogs = filteredLogs.filter(log => log.username === filters.username);
       }
 
       if (filters.search) {
@@ -97,34 +98,34 @@ export class RedisService {
 
       if (filters.startDate) {
         const startDate = new Date(filters.startDate);
-        filteredLogs = filteredLogs.filter(log => log.timestamp && log.timestamp >= startDate);
+        filteredLogs = filteredLogs.filter(log => log.datetime && log.datetime >= startDate);
       }
 
       if (filters.endDate) {
         const endDate = new Date(filters.endDate);
-        filteredLogs = filteredLogs.filter(log => log.timestamp && log.timestamp <= endDate);
+        filteredLogs = filteredLogs.filter(log => log.datetime && log.datetime <= endDate);
       }
 
       if (filters.startTime) {
         filteredLogs = filteredLogs.filter(log => {
-          if (!log.timestamp) return false;
-          const logTime = log.timestamp.toTimeString().slice(0, 5); // HH:MM format
+          if (!log.datetime) return false;
+          const logTime = log.datetime.toTimeString().slice(0, 5); // HH:MM format
           return logTime >= filters.startTime;
         });
       }
 
       if (filters.endTime) {
         filteredLogs = filteredLogs.filter(log => {
-          if (!log.timestamp) return false;
-          const logTime = log.timestamp.toTimeString().slice(0, 5); // HH:MM format
+          if (!log.datetime) return false;
+          const logTime = log.datetime.toTimeString().slice(0, 5); // HH:MM format
           return logTime <= filters.endTime;
         });
       }
 
-      // Ordenar por timestamp (mais recente primeiro)
+      // Ordenar por datetime (mais recente primeiro)
       filteredLogs.sort((a, b) => {
-        const timeA = a.timestamp ? a.timestamp.getTime() : 0;
-        const timeB = b.timestamp ? b.timestamp.getTime() : 0;
+        const timeA = a.datetime ? a.datetime.getTime() : 0;
+        const timeB = b.datetime ? b.datetime.getTime() : 0;
         return timeB - timeA;
       });
 
@@ -154,14 +155,14 @@ export class RedisService {
   }> {
     try {
       const redis = await this.connectToRedis(connection);
-      const logKeys = await redis.keys('log:*');
+      const eventKeys = await redis.keys('event:*');
       
-      if (logKeys.length === 0) {
+      if (eventKeys.length === 0) {
         return { totalLogs: 0, errors24h: 0, warnings24h: 0, successRate: 100 };
       }
 
       const pipeline = redis.pipeline();
-      logKeys.forEach(key => {
+      eventKeys.forEach(key => {
         pipeline.hgetall(key);
       });
       
@@ -181,18 +182,18 @@ export class RedisService {
 
       results.forEach((result) => {
         if (result && result[1] && typeof result[1] === 'object') {
-          const logData = result[1] as Record<string, string>;
+          const eventData = result[1] as Record<string, string>;
           
-          if (logData.level && logData.timestamp) {
+          if (eventData.log_level && eventData.datetime) {
             totalLogs++;
-            const logTime = new Date(logData.timestamp);
+            const logTime = new Date(eventData.datetime);
             
             if (logTime >= twentyFourHoursAgo) {
-              if (logData.level === 'error') {
+              if (eventData.log_level === 'ERROR') {
                 errors24h++;
-              } else if (logData.level === 'warning') {
+              } else if (eventData.log_level === 'WARN') {
                 warnings24h++;
-              } else if (logData.level === 'info' || logData.level === 'debug') {
+              } else if (eventData.log_level === 'INFO' || eventData.log_level === 'DEBUG') {
                 successLogs++;
               }
             }
