@@ -160,11 +160,16 @@ export class RedisService {
             const logTime = new Date(json.datetime);
             const level = json.log_level.toLowerCase();
             
+            // Debug: log para ver os dados
+            console.log(`Log processado: level=${level}, time=${json.datetime}, isRecent=${logTime >= twentyFourHoursAgo}`);
+            
             if (logTime >= twentyFourHoursAgo) {
               if (level === 'error') {
                 errors24h++;
+                console.log(`Erro encontrado! Total errors24h: ${errors24h}`);
               } else if (level === 'warning') {
                 warnings24h++;
+                console.log(`Warning encontrado! Total warnings24h: ${warnings24h}`);
               } else if (level === 'info' || level === 'debug') {
                 successLogs++;
               }
