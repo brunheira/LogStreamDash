@@ -112,7 +112,7 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...log,
         metadata: log.metadata || null,
-        timestamp: new Date(),
+        datetime: new Date(),
       })
       .returning();
     return newLog;
