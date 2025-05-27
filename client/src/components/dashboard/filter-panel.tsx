@@ -137,21 +137,21 @@ export function FilterPanel({
               </Select>
             </div>
 
-            {/* Service Filter */}
+            {/* Username Filter */}
             <div className="space-y-2">
-              <Label>Serviço</Label>
+              <Label>Usuário</Label>
               <Select
                 value={filters.service}
                 onValueChange={(value) => onFiltersChange({ ...filters, service: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos os serviços" />
+                  <SelectValue placeholder="Todos os usuários" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os serviços</SelectItem>
-                  {services.map((service) => (
-                    <SelectItem key={service} value={service}>
-                      {service}
+                  <SelectItem value="all">Todos os usuários</SelectItem>
+                  {usernames.map((username) => (
+                    <SelectItem key={username} value={username}>
+                      {username}
                     </SelectItem>
                   ))}
                 </SelectContent>
