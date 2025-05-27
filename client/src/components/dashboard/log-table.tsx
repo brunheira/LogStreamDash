@@ -113,15 +113,23 @@ export function LogTable({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {log.service}
+                          {log.service || 'unknown'}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400">
                           {log.timestamp ? formatTimestamp(log.timestamp) : "N/A"}
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          ID: {log.eventId}
                         </span>
                       </div>
                       <p className="text-sm text-slate-700 dark:text-slate-300 font-mono">
                         {log.message}
                       </p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          Usuário: <span className="font-medium">{log.username}</span>
+                        </span>
+                      </div>
                       {log.metadata && Object.keys(log.metadata).length > 0 && (
                         <div className="flex items-center space-x-4 mt-2">
                           {Object.entries(log.metadata).map(([key, value]) => (

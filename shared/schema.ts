@@ -18,9 +18,11 @@ export const redisConnections = pgTable("redis_connections", {
 export const logs = pgTable("logs", {
   id: serial("id").primaryKey(),
   connectionId: text("connection_id").notNull(),
-  level: text("level").notNull(), // error, warning, info, debug
+  eventId: text("event_id").notNull(), // UUID do evento
+  level: text("level").notNull(), // INFO, ERROR, WARNING, DEBUG
   service: text("service").notNull(),
   message: text("message").notNull(),
+  username: text("username").notNull().default("system"),
   timestamp: timestamp("timestamp").defaultNow(),
   metadata: json("metadata"), // additional fields like requestId, ip, etc.
 });

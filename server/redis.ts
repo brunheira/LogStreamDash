@@ -34,17 +34,17 @@ export class RedisService {
     try {
       const redis = await this.connectToRedis(connection);
       
-      // Buscar todas as chaves de log
+      // Buscar todas as chaves de log (assumindo que os logs JSON estão armazenados com chaves log:*)
       const logKeys = await redis.keys('log:*');
       
       if (logKeys.length === 0) {
         return { logs: [], total: 0 };
       }
 
-      // Buscar dados de todos os logs
+      // Buscar dados de todos os logs JSON
       const pipeline = redis.pipeline();
       logKeys.forEach(key => {
-        pipeline.hgetall(key);
+        pipeline.get(key); // Usar GET para obter o JSON completo
       });
       
       const results = await pipeline.exec();
@@ -53,27 +53,34 @@ export class RedisService {
         return { logs: [], total: 0 };
       }
 
-      // Converter dados do Redis para formato de Log
+      // Converter dados JSON do Redis para formato de Log
       const logs: Log[] = [];
       
       results.forEach((result, index) => {
-        if (result && result[1] && typeof result[1] === 'object') {
-          const logData = result[1] as Record<string, string>;
-          
-          // Extrair ID do log da chave (log:1 -> 1)
-          const logId = parseInt(logKeys[index].split(':')[1]);
-          
-          if (logData.connectionId && logData.level && logData.service && logData.message) {
-            const log: Log = {
-              id: logId,
-              connectionId: logData.connectionId,
-              level: logData.level,
-              service: logData.service,
-              message: logData.message,
-              timestamp: logData.timestamp ? new Date(logData.timestamp) : new Date(),
-              metadata: logData.metadata ? JSON.parse(logData.metadata) : null,
-            };
-            logs.push(log);
+        if (result && result[1] && typeof result[1] === 'string') {
+          try {
+            const logJson = JSON.parse(result[1] as string);
+            
+            // Extrair ID do log da chave (log:1 -> 1)
+            const logId = parseInt(logKeys[index].split(':')[1]);
+            
+            // Converter formato JSON para nosso schema
+            if (logJson.event_id && logJson.log_level && logJson.message && logJson.username && logJson.datetime) {
+              const log: Log = {
+                id: logId,
+                connectionId: connection.id.toString(),
+                eventId: logJson.event_id,
+                level: logJson.log_level.toUpperCase(), // INFO, ERROR, WARNING, DEBUG
+                service: logJson.service || 'unknown', // Se não tiver service, usar 'unknown'
+                message: logJson.message,
+                username: logJson.username,
+                timestamp: new Date(logJson.datetime),
+                metadata: { originalJson: logJson }, // Manter o JSON original como metadata
+              };
+              logs.push(log);
+            }
+          } catch (parseError) {
+            console.error(`Erro ao processar log JSON da chave ${logKeys[index]}:`, parseError);
           }
         }
       });
@@ -81,17 +88,19 @@ export class RedisService {
       // Aplicar filtros
       let filteredLogs = logs;
 
-      if (filters.level) {
-        filteredLogs = filteredLogs.filter(log => log.level === filters.level);
+      if (filters.level && filters.level !== 'all') {
+        filteredLogs = filteredLogs.filter(log => log.level.toLowerCase() === filters.level.toLowerCase());
       }
 
-      if (filters.service) {
+      if (filters.service && filters.service !== 'all') {
         filteredLogs = filteredLogs.filter(log => log.service === filters.service);
       }
 
       if (filters.search) {
         filteredLogs = filteredLogs.filter(log => 
-          log.message.toLowerCase().includes(filters.search.toLowerCase())
+          log.message.toLowerCase().includes(filters.search.toLowerCase()) ||
+          log.username.toLowerCase().includes(filters.search.toLowerCase()) ||
+          log.eventId.toLowerCase().includes(filters.search.toLowerCase())
         );
       }
 
