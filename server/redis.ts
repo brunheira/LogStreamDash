@@ -56,7 +56,7 @@ export class RedisService {
               connectionId: connection.id.toString(),
               eventId: json.event_id,
               level: json.log_level.toUpperCase(),
-              service: json.service || "unknown",
+              service: json.service || "sistema",
               message: json.message,
               username: json.username,
               timestamp: new Date(json.datetime),
